@@ -6,10 +6,15 @@ public class ChartData: ObservableObject, Equatable, Identifiable {
         return lhs.data.map{$0} == rhs.data.map{$0}
     }
     
-//    public var id: ObjectIdentifier
     public var id: String
     @Published public var label: String
-    @Published public var data: [Double?] = []
+    /// Update of @Published array does not update view
+    /// https://developer.apple.com/forums/thread/134185
+    @Published public var data: [Double?]/* = []{
+        willSet{
+            objectWillChange.send()
+        }
+    }*/
     // TODO: support Gradient or even ShapeStyle
     @Published public var backgroundColor: Color
     @Published public var borderColor: Color

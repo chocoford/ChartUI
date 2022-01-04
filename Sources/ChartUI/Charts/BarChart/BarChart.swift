@@ -96,21 +96,57 @@ public struct BarChart: View {
     //    }
 }
 struct MyPreviewProvider_Previews: PreviewProvider {
+    static var data: ChartData = .init(data: [1, 3.0, 5, 10],
+                             label: "data 1",
+                             backgroundColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.2),
+                             borderColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.8))
+    static var options: ChartOptions = .automatic
     static var previews: some View {
-        BarChart(chartDataset: .init(labels: [""],
-                             data: [
-                                .init(data: [1, 3.0, 5, 10],
-                                      label: "data 1",
-                                      backgroundColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.2),
-                                      borderColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.8)),
-                                .init(data: [4, 5.0, 2, 15],
-                                      label: "data 2",
-                                      backgroundColor: .init(.sRGB, red: 0, green: 1, blue: 0, opacity: 0.2),
-                                      borderColor: .init(.sRGB, red: 0, green: 1, blue: 0, opacity: 0.8))
-                             ]
-                            )
-        )
-            .environmentObject(ChartOptions.automatic)
+        VStack {
+            BarChart(chartDataset: .init(labels: [""],
+                                         data: [data
+//                                            .init(data: [4, 5.0, 2, 15],
+//                                                  label: "data 2",
+//                                                  backgroundColor: .init(.sRGB, red: 0, green: 1, blue: 0, opacity: 0.2),
+//                                                  borderColor: .init(.sRGB, red: 0, green: 1, blue: 0, opacity: 0.8))
+                                         ]
+                                        )
+            )
+                .environmentObject(ChartOptions.automatic)
+            Button {
+                var newData: [Double] = []
+                for _ in 0..<5 {
+                    newData.append(Double.random(in: 0...10))
+                }
+                data.data = .init(newData)
+            } label: {
+                Text("随机数据")
+            }
+            HStack {
+                Button {
+                    options.axes = .automatic
+                } label: {
+                    Text("显示坐标")
+                }
+                Button {
+                    options.axes = .hidden
+                } label: {
+                    Text("隐藏坐标")
+                }
+            }
+            HStack {
+                Button {
+                    data.data.append(Double.random(in: 0..<10))
+                } label: {
+                    Text("添加数据")
+                }
+                Button {
+                    data.data.removeLast()
+                } label: {
+                    Text("减少数据")
+                }
+            }
+        }
     }
 }
 
