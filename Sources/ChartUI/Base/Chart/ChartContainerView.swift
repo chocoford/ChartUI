@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ChartContainerView<Content: View>: View {
 
-    public var chartDataset: ChartDataset
+    @ObservedObject public var chartDataset: ChartDataset
     @EnvironmentObject var options: ChartOptions
     @State private var touchLocation: CGFloat = -1.0
     
@@ -41,9 +41,9 @@ struct ChartContainerView<Content: View>: View {
     var body: some View {
 //        ZStack {
             GeometryReader { geometry in
-                CoordinatesContainerView(geometry: .constant(geometry),
-                                         maxValue: .constant(maxValue),
-                                         labels: .constant(chartDataset.labels)) {
+                CoordinatesContainerView(geometry: geometry,
+                                         maxValue: maxValue,
+                                         labels: chartDataset.labels) {
                     ZStack {
                         // MARK: Coordinate Line
                         if options.coordinateLine != nil {

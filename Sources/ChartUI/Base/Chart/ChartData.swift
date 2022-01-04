@@ -8,13 +8,7 @@ public class ChartData: ObservableObject, Equatable, Identifiable {
     
     public var id: String
     @Published public var label: String
-    /// Update of @Published array does not update view
-    /// https://developer.apple.com/forums/thread/134185
-    @Published public var data: [Double?]/* = []{
-        willSet{
-            objectWillChange.send()
-        }
-    }*/
+    @Published public var data: [Double?]
     // TODO: support Gradient or even ShapeStyle
     @Published public var backgroundColor: Color
     @Published public var borderColor: Color
@@ -48,25 +42,21 @@ public class ChartDataset: ObservableObject, Equatable  {
     }
     
     @Published public var data: [ChartData] = []
-    
-    /// must be equal length with `data`
     @Published public var labels: [String] = []
 
-	/// Initialize with data array
-	/// - Parameter data: Array of `Double`
+    /// Initialize with data array
+    /// - Parameter labels: the labels (x-axes labels in general) of data.
+    /// - Parameter data: Array of `ChartData`
     public init(labels: [String], data: [ChartData]) {
         /// all `data` length must be equal to each ohter's
         /// allow `data` of `ChartData` to be `nil`
         /// allow `labels`'s length to be not eaual to `data`'s
+        /// allow `labels`'s length to be greater than `data`'s
         if data.map{$0.data.count}.filter({$0 == data.first?.data.count ?? 0}).count == data.count {
             self.labels = labels
-            let dataCount = data.first?.data.count ?? 0
-            if dataCount > labels.count {
-                self.labels.append(contentsOf: Array(repeating: "", count: dataCount - labels.count))
-            } else {
-                self.labels = Array(labels.prefix(upTo: dataCount))
-            }
             self.data = data
+            let dataCount = data.first?.data.count ?? 0
+            self.adjustLabels(count: dataCount)
         } else {
             print("The length of ChartDataset's labels must be equal to data's")
             self.labels = []
@@ -83,15 +73,32 @@ public class ChartDataset: ObservableObject, Equatable  {
     }
     
     private var dataCancellables = [AnyCancellable]()
+    private var dataCountCancellables = [AnyCancellable]()
     
     
     ///https://stackoverflow.com/questions/66884390/swiftui-combine-nested-observed-objects
-    func initCancellable() {
+    private func initCancellable() {
         dataCancellables = data.map { data in
             data.objectWillChange.sink { [weak self] in
                 guard let self = self else { return }
                 self.objectWillChange.send()
             }
+        }
+        /// We should get the changed data's count. `data.objectWillChange.sink` cannot give us this information
+        dataCountCancellables = data.map { data in
+            /// inspired by https://stackoverflow.com/questions/59519530/how-does-combine-know-an-observableobject-actually-changed
+            data.$data.sink {
+                self.adjustLabels(count: $0.count)
+            }
+        }
+    }
+    
+    /// Only adjust labels when data's count greater than labels'. Ignore the case that data's count less than labels'.
+    /// - Parameter newCount: new data's count which has been changed.
+    private func adjustLabels(count newCount: Int) {
+        if newCount > labels.count {
+            /// auto append empty string
+            self.labels.append(contentsOf: Array(repeating: "", count: newCount - labels.count))
         }
     }
 }

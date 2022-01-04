@@ -1,7 +1,7 @@
 import SwiftUI
 
 public struct BarChart: View {
-    public var chartDataset: ChartDataset
+    @ObservedObject public var chartDataset: ChartDataset
     @EnvironmentObject public var options: ChartOptions
     @State private var touchLocation: CGFloat = -1.0
     
@@ -21,38 +21,28 @@ public struct BarChart: View {
     /// As touched (dragged) the `touchLocation` is updated and the current value is highlighted.
     public var body: some View {
         ChartContainerView(data: chartDataset) { geometry, maxValue in
-            let spacing = (geometry.size.width - Constant.spacing) / CGFloat(chartDataset.labels.count * 3)
-            HStack(alignment: .bottom,
-                   spacing: spacing) {
+            let spacing: CGFloat = (geometry.size.width) / CGFloat(chartDataset.labels.count * 3)
+            HStack(alignment: .bottom, spacing: spacing) {
                 // FIXME: 这里ForEach会导致数据更新页面不更新
-//                ForEach(0..<chartDataset.labels.count, id: \.self) { index in
-//                    HStack {
-//                        ForEach(chartDataset.data, id: \.id) { dataset in
-                ForEach(chartDataset.data.first!.data.map({$0 ?? 0.0}), id: \.self) { data in
-                    let normalizedValue = (data ) / Double(maxValue)
-                        BarChartCell(value: normalizedValue,
-                                     index: 0,
-                                     backgroundColor: chartDataset.data.first!.backgroundColor,
-                                     borderColor: chartDataset.data.first!.borderColor,
-                                     borderWdith: chartDataset.data.first!.borderWidth,
-                                     touchLocation: self.touchLocation)
-                        //                                       .scaleEffect(getScaleSize(touchLocation: self.touchLocation, index: index), anchor: .bottom)
-                            .animation(Animation.easeIn(duration: 0.2), value: chartDataset)
+                ForEach(Array(chartDataset.labels.enumerated()), id: \.0) { (index, _) in
+                    /// Value relative to maximum value
+                    ForEach(chartDataset.data) { dataset in
+                        /// leave those `nodata` alone
+                        if index < dataset.data.count {
+                            let normalizedValue = (dataset.data[index] ?? 0.0) / Double(maxValue)
+                            BarChartCell(value: normalizedValue,
+                                         index: index,
+                                         backgroundColor: dataset.backgroundColor,
+                                         borderColor: dataset.borderColor,
+                                         borderWdith: dataset.borderWidth,
+                                         touchLocation: self.touchLocation)
+                            //                                       .scaleEffect(getScaleSize(touchLocation: self.touchLocation, index: index), anchor: .bottom)
+                                .animation(Animation.easeIn(duration: 0.2), value: chartDataset)
+                        } else {
+                            BarChartCell(value: 0, backgroundColor: Color.clear, borderColor: Color.clear, borderWdith: 0, touchLocation: 0)
+                        }
+                    }
                 }
-                            /// Value relative to maximum value
-//                            let normalizedValue = (dataset.data[index] ?? 0.0) / Double(maxValue)
-//                                BarChartCell(value: normalizedValue,
-//                                             index: index,
-//                                             backgroundColor: dataset.backgroundColor,
-//                                             borderColor: dataset.borderColor,
-//                                             borderWdith: dataset.borderWidth,
-//                                             touchLocation: self.touchLocation)
-//                                //                                       .scaleEffect(getScaleSize(touchLocation: self.touchLocation, index: index), anchor: .bottom)
-//                                    .animation(Animation.easeIn(duration: 0.2), value: chartDataset)
-
-//                        }
-//                    }
-//                }
             }
                    .padding(.horizontal, spacing / 2)
                    .gesture(DragGesture()
@@ -96,29 +86,24 @@ public struct BarChart: View {
     //    }
 }
 struct MyPreviewProvider_Previews: PreviewProvider {
-    static var data: ChartData = .init(data: [1, 3.0, 5, 10],
-                             label: "data 1",
-                             backgroundColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.2),
-                             borderColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.8))
+    @ObservedObject static var data: ChartDataset = .init(labels: [String](), data: [
+        .init(data: [1, 3.0, 5, 10],
+                                 label: "data 1",
+                                 backgroundColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.2),
+                                 borderColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.8))
+    ])
+
     static var options: ChartOptions = .automatic
     static var previews: some View {
         VStack {
-            BarChart(chartDataset: .init(labels: [""],
-                                         data: [data
-//                                            .init(data: [4, 5.0, 2, 15],
-//                                                  label: "data 2",
-//                                                  backgroundColor: .init(.sRGB, red: 0, green: 1, blue: 0, opacity: 0.2),
-//                                                  borderColor: .init(.sRGB, red: 0, green: 1, blue: 0, opacity: 0.8))
-                                         ]
-                                        )
-            )
+            BarChart(chartDataset: data)
                 .environmentObject(ChartOptions.automatic)
             Button {
                 var newData: [Double] = []
-                for _ in 0..<5 {
+                for _ in 0..<data.data[0].data.count {
                     newData.append(Double.random(in: 0...10))
                 }
-                data.data = .init(newData)
+                data.data[0].data = .init(newData)
             } label: {
                 Text("随机数据")
             }
@@ -136,14 +121,26 @@ struct MyPreviewProvider_Previews: PreviewProvider {
             }
             HStack {
                 Button {
-                    data.data.append(Double.random(in: 0..<10))
+                    data.data[0].data.append(Double.random(in: 0..<10))
                 } label: {
                     Text("添加数据")
                 }
                 Button {
-                    data.data.removeLast()
+                    data.data[0].data.removeLast()
                 } label: {
                     Text("减少数据")
+                }
+            }
+            HStack {
+                Button {
+                    data.labels.append(Int.random(in: 0..<10).description)
+                } label: {
+                    Text("添加标签")
+                }
+                Button {
+                    data.labels.removeLast()
+                } label: {
+                    Text("减少标签")
                 }
             }
         }

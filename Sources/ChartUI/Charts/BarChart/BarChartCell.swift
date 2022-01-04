@@ -12,6 +12,7 @@ public struct BarChartCell<SBG: ShapeStyle, SBR: ShapeStyle>: View {
 
     @State private var firstDisplay: Bool = true
     
+    
     ///
     /// - Parameters:
     ///   - value: the heiht ratio of the this bar

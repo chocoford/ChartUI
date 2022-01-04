@@ -9,20 +9,22 @@ import SwiftUI
 
 struct CoordinatesContainerView<Content: View>: View {
     @EnvironmentObject public var options: ChartOptions
-    @Binding var geometry: GeometryProxy
-    @Binding var maxValue: Double
-    @Binding var labels: [String]
+    
+    // every time these propertis changed, view should redrawn.
+    var geometry: GeometryProxy
+    var maxValue: Double
+    var labels: [String]
     
     let yAxesWidth: CGFloat = 40
     private let chartView: Content
     
-    init(geometry: Binding<GeometryProxy>,
-         maxValue: Binding<Double>,
-         labels: Binding<[String]>,
+    init(geometry: GeometryProxy,
+         maxValue: Double,
+         labels: [String],
          @ViewBuilder content: () -> Content) {
-        self._geometry = geometry
-        self._maxValue = maxValue
-        self._labels = labels
+        self.geometry = geometry
+        self.maxValue = maxValue
+        self.labels = labels
         self.chartView = content()
     }
     
@@ -48,7 +50,6 @@ struct CoordinatesContainerView<Content: View>: View {
             } else {
                 chartView
             }
-            
         }
     }
     func yAxesView(_ options: ChartOptions.AxesOptions.Options) -> some View {
@@ -103,14 +104,13 @@ struct CoordinatesContainerView<Content: View>: View {
             }
             if labels.count > 0 {
                 HStack(spacing: 0) {
-                    ForEach(0..<labels.count) { i in
-                        Text(String(i))
+                    ForEach(Array(labels.enumerated()), id: \.0) { (i, label) in
+                        Text(label)
                             .frame(width: axesLength / CGFloat(labels.count))
                             .font(.footnote)
                     }
                 }
             }
-            
         }.padding(.leading, yAxesWidth)
             .padding(.top, 6)
     }
@@ -118,16 +118,24 @@ struct CoordinatesContainerView<Content: View>: View {
 }
 
 struct CoordinatesContainerView_Previews: PreviewProvider {
+    @State static var labels: [String] = ["String", "String", "String"]
     static var previews: some View {
-        GeometryReader { geometry in
-            CoordinatesContainerView(geometry: .constant(geometry),
-                                     maxValue: .constant(100),
-                                     labels: .constant(["String", "String", "String"])) {
-                Circle()
+        VStack {
+            GeometryReader { geometry in
+                CoordinatesContainerView(geometry: geometry,
+                                         maxValue: 100,
+                                         labels: labels) {
+                    Circle()
+                }
+                                         .environmentObject(ChartOptions(axes: .init(x: .init(showAxes: true),
+                                                                                     y: .automatic),
+                                                                         coordinateLine: .automatic))
             }
-                                     .environmentObject(ChartOptions(axes: .init(x: .init(showAxes: true),
-                                                                                 y: .automatic),
-                                                                     coordinateLine: .automatic))
+            Button{
+                labels.append("string")
+            } label: {
+                Text("add label")
+            }
         }
         
     }
