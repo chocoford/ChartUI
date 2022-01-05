@@ -23,23 +23,36 @@ public struct BarChart: View {
         ChartContainerView(data: chartDataset) { geometry, maxValue in
             let spacing: CGFloat = (geometry.size.width) / CGFloat(chartDataset.labels.count * 3)
             HStack(alignment: .bottom, spacing: spacing) {
-                // FIXME: 这里ForEach会导致数据更新页面不更新
                 ForEach(Array(chartDataset.labels.enumerated()), id: \.0) { (index, _) in
                     /// Value relative to maximum value
-                    ForEach(chartDataset.data) { dataset in
-                        /// leave those `nodata` alone
-                        if index < dataset.data.count {
-                            let normalizedValue = (dataset.data[index] ?? 0.0) / Double(maxValue)
-                            BarChartCell(value: normalizedValue,
-                                         index: index,
-                                         backgroundColor: dataset.backgroundColor,
-                                         borderColor: dataset.borderColor,
-                                         borderWdith: dataset.borderWidth,
-                                         touchLocation: self.touchLocation)
-                            //                                       .scaleEffect(getScaleSize(touchLocation: self.touchLocation, index: index), anchor: .bottom)
-                                .animation(Animation.easeIn(duration: 0.2), value: chartDataset)
-                        } else {
-                            BarChartCell(value: 0, backgroundColor: Color.clear, borderColor: Color.clear, borderWdith: 0, touchLocation: 0)
+                    HStack(alignment: .bottom, spacing: spacing / 5) {
+                        ForEach(chartDataset.data) { dataset in
+                            /// leave those `nodata` alone
+                            if index < dataset.data.count {
+                                let normalizedValue: Double = (dataset.data[index] ?? 0.0) / Double(maxValue)
+                                ZStack(alignment: .bottom) {
+                                    BarChartCell(value: normalizedValue,
+                                                 index: index,
+                                                 backgroundColor: dataset.backgroundColor,
+                                                 borderColor: dataset.borderColor,
+                                                 borderWdith: dataset.borderWidth,
+                                                 touchLocation: self.touchLocation)
+//                                    if options.dataset.showValue {
+//                                        let offset: CGFloat = CGFloat(normalizedValue) * geometry.size.height
+//                                        let valueHeight: CGFloat = 32
+//                                        HStack() {
+//                                            Text("123")
+//                                        }
+//                                        .padding(.bottom, offset - valueHeight)
+//                                        .border(.red)
+//                                    }
+                                }
+//                                .border(.white)
+                                //                                       .scaleEffect(getScaleSize(touchLocation: self.touchLocation, index: index), anchor: .bottom)
+                                    .animation(Animation.easeInOut(duration: 0.2), value: chartDataset.labels)
+                            } else {
+                                BarChartCell(value: 0, backgroundColor: Color.clear, borderColor: Color.clear, borderWdith: 0, touchLocation: 0)
+                            }
                         }
                     }
                 }
@@ -90,20 +103,31 @@ struct MyPreviewProvider_Previews: PreviewProvider {
         .init(data: [1, 3.0, 5, 10],
                                  label: "data 1",
                                  backgroundColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.2),
-                                 borderColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.8))
+                                 borderColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.8)),
+        .init(data: [2, 7.0, 1, 5],
+                                 label: "data 2",
+                                 backgroundColor: .init(.sRGB, red: 0, green: 1, blue: 0, opacity: 0.2),
+                                 borderColor: .init(.sRGB, red: 0, green: 1, blue: 0, opacity: 0.8)),
+        .init(data: [4, 2.0, 2, 9],
+                                 label: "data 3",
+                                 backgroundColor: .init(.sRGB, red: 0, green: 0, blue: 1, opacity: 0.2),
+                                 borderColor: .init(.sRGB, red: 0, green: 0, blue: 1, opacity: 0.8))
     ])
 
-    static var options: ChartOptions = .automatic
+    static var options: ChartOptions = .init(dataset: .init(showValue: true), axes: .automatic, coordinateLine: .automatic)
     static var previews: some View {
         VStack {
             BarChart(chartDataset: data)
-                .environmentObject(ChartOptions.automatic)
+                .environmentObject(options)
             Button {
-                var newData: [Double] = []
-                for _ in 0..<data.data[0].data.count {
-                    newData.append(Double.random(in: 0...10))
+                
+                for i in 0..<data.data.count {
+                    var newData: [Double] = []
+                    for _ in 0..<data.data[i].data.count {
+                        newData.append(Double.random(in: 0...100))
+                    }
+                    data.data[i].data = .init(newData)
                 }
-                data.data[0].data = .init(newData)
             } label: {
                 Text("随机数据")
             }
@@ -111,12 +135,24 @@ struct MyPreviewProvider_Previews: PreviewProvider {
                 Button {
                     options.axes = .automatic
                 } label: {
-                    Text("显示坐标")
+                    Text("显示坐标(值)")
                 }
                 Button {
                     options.axes = .hidden
                 } label: {
-                    Text("隐藏坐标")
+                    Text("隐藏坐标(值)")
+                }
+                Button {
+                    options.axes.x.showValue = true
+                    options.axes.y.showValue = true
+                } label: {
+                    Text("显示坐标值")
+                }
+                Button {
+                    options.axes.x.showValue = false
+                    options.axes.y.showValue = false
+                } label: {
+                    Text("隐藏坐标值")
                 }
             }
             HStack {
