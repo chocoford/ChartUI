@@ -10,9 +10,20 @@ import SwiftUI
 import Combine
 
 /// [](https://jaredsinclair.com/2020/05/07/swiftui-cheat-sheet.html)
-public class ChartOptions: ObservableObject {
-    public class DatasetOptions: ObservableObject {
+public class ChartOptions: ObservableObject, Equatable {
+    public static func == (lhs: ChartOptions, rhs: ChartOptions) -> Bool {
+        lhs.dataset == rhs.dataset &&
+        lhs.axes == rhs.axes &&
+        lhs.coordinateLine == rhs.coordinateLine
+    }
+    
+    public class DatasetOptions: ObservableObject, Equatable {
+        public static func == (lhs: ChartOptions.DatasetOptions, rhs: ChartOptions.DatasetOptions) -> Bool {
+            lhs.showValue == rhs.showValue
+        }
+        
         @Published public var showValue: Bool
+        var valueHeight: CGFloat = 16
         
         public static var automatic = DatasetOptions(showValue: false)
         
@@ -20,15 +31,31 @@ public class ChartOptions: ObservableObject {
             self.showValue = showValue
         }
     }
-    public class AxesOptions: ObservableObject {
+    public class AxesOptions: ObservableObject, Equatable {
+        public static func == (lhs: ChartOptions.AxesOptions, rhs: ChartOptions.AxesOptions) -> Bool {
+            lhs.x == rhs.x && lhs.y == rhs.y
+        }
+        
         public static var automatic = AxesOptions(x: .automatic, y: .automatic)
         public static var hidden = AxesOptions(x: .hidden, y: .hidden)
         
-        public class Options: ObservableObject {
+        public class Options: ObservableObject, Equatable {
+            public static func == (lhs: ChartOptions.AxesOptions.Options, rhs: ChartOptions.AxesOptions.Options) -> Bool {
+                lhs.max == rhs.max &&
+                lhs.min == rhs.min &&
+                lhs.showValue == rhs.showValue &&
+                lhs.valuePadding == rhs.valuePadding &&
+                lhs.showAxes == rhs.showAxes &&
+                lhs.axesWidth == rhs.axesWidth &&
+                lhs.axesColor == rhs.axesColor
+            }
+            
             public static var automatic = Options()
             public static var hidden = Options(showValue: false, showAxes: false, axesWidth: 0.5, axesColor: .primary)
             
             // value
+            @Published public var max: Double?
+            @Published public var min: Double?
             @Published public var showValue: Bool
             @Published public var valuePadding: CGFloat
             
@@ -37,7 +64,9 @@ public class ChartOptions: ObservableObject {
             @Published public var axesWidth: CGFloat
             @Published public var axesColor: Color
             
-            public init(showValue: Bool = true, valuePadding: CGFloat = 6, showAxes: Bool = true, axesWidth: CGFloat = 0.5, axesColor: Color = .primary) {
+            public init(max: Double? = nil, min: Double? = nil, showValue: Bool = true, valuePadding: CGFloat = 6, showAxes: Bool = true, axesWidth: CGFloat = 0.5, axesColor: Color = .primary) {
+                self.max = max
+                self.min = min
                 self.showValue = showValue
                 self.valuePadding = valuePadding
                 self.showAxes = showAxes
@@ -68,7 +97,14 @@ public class ChartOptions: ObservableObject {
             }
         }
     }
-    public class CoordinateLineOptions: ObservableObject {
+    public class CoordinateLineOptions: ObservableObject, Equatable {
+        public static func == (lhs: ChartOptions.CoordinateLineOptions, rhs: ChartOptions.CoordinateLineOptions) -> Bool {
+            lhs.number == rhs.number &&
+            lhs.lineType == rhs.lineType &&
+            lhs.lineColor == rhs.lineColor &&
+            lhs.lineWidth == rhs.lineWidth
+        }
+        
         public enum LineType {
             case solid, dash, dot
         }
@@ -88,7 +124,7 @@ public class ChartOptions: ObservableObject {
         }
     }
     
-    public static var automatic = ChartOptions(axes: .automatic, coordinateLine: .automatic)
+    public static var automatic = ChartOptions(dataset: .automatic, axes: .automatic, coordinateLine: .automatic)
     
     @Published public var dataset: DatasetOptions
     @Published public var axes: AxesOptions
