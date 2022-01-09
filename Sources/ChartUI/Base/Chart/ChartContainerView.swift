@@ -11,25 +11,36 @@ struct ChartContainerView<Content: View>: View {
 
     @ObservedObject public var chartDataset: ChartDataset
     @EnvironmentObject var options: ChartOptions
-    @State private var touchLocation: CGFloat = -1.0
     
     private let chartView: (_ geometry: GeometryProxy, _ maxValue: CGFloat) -> Content
+    
+    
+    var gap: Double {
+        guard let max = chartDataset.data.flatMap({$0.data}).map({$0 ?? 0}).max() else {
+            return 0.1
+        }
+        return getGapValue(than: max, base: [1, 2, 5])
+    }
     
     /// make max value awalys at a interger
     var maxValue: Double {
         guard let max = chartDataset.data.flatMap({$0.data}).map({$0 ?? 0}).max() else {
             return 1
         }
-        
-        func getMaxValue(divideNum: Int) -> Double {
-            // FIXME: 小数的算法
-            if max < Double(divideNum) {
-                return ceil(max)
+        if abs(max) != 0 {
+            if self.options.coordinateLine == nil {
+                return max
+            } else {
+                let maxValue = (ceil((max) / Double(gap))) * Double(gap)
+                if options.dataset.showValue && (max > maxValue * 0.95) {
+                    return (ceil((max) / Double(gap)) + 1) * Double(gap)
+                } else {
+                    return (ceil((max) / Double(gap))) * Double(gap)
+                }
             }
-            return ceil(max / Double(divideNum)) * Double(divideNum)
+        } else {
+            return 1
         }
-        
-        return max != 0 ? self.options.coordinateLine == nil ? max : getMaxValue(divideNum: self.options.coordinateLine!.number) : 1
     }
 
     public init (data: ChartDataset,
@@ -43,15 +54,28 @@ struct ChartContainerView<Content: View>: View {
             GeometryReader { geometry in
                 CoordinatesContainerView(geometry: geometry,
                                          maxValue: maxValue,
+                                         yAxesValueNum: Int(maxValue / gap),
                                          labels: chartDataset.labels) {
                     ZStack {
                         // MARK: Coordinate Line
                         if options.coordinateLine != nil {
-                            CoordinatesLineView()
+                            CoordinatesLineView(coordinateLineNumber: Int(maxValue / gap))
                         }
                         if chartDataset.data.count > 0 && chartDataset.data.first?.data.count ?? 0 > 0 {
                             chartView(geometry, maxValue)
                         }
+//                        // TODO: 不是很完美的解决方案
+//                        if options.dataset.showValue {
+//                            let fontSize = geometry.size.width / 2.5
+//                            let offset: CGFloat = CGFloat(1 - normalizedValue) * geometry.size.height
+//                            VStack(spacing: 0) {
+//                                Spacer().frame(height: offset - fontSize - 4)
+//                                Text(String(format: "%.1f", dataValue))
+//                                    .font(.custom("dataValue", size: fontSize))
+//                                    .animation(Animation.spring(), value: offset)
+//                                    .transition(.opacity)
+//                            }.frame(width: geometry.size.width)
+//                        }
                     }
                 }
             }

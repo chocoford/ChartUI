@@ -58,6 +58,7 @@ public class ChartOptions: ObservableObject, Equatable {
             @Published public var min: Double?
             @Published public var showValue: Bool
             @Published public var valuePadding: CGFloat
+            var minLabelUnitLength: CGFloat = 4
             
             // axes
             @Published public var showAxes: Bool
@@ -111,12 +112,16 @@ public class ChartOptions: ObservableObject, Equatable {
         
         public static var automatic = CoordinateLineOptions()
         
-        @Published public var number: Int
+        @Published public var number: Int?
         @Published public var lineType: LineType
         @Published public var lineColor: Color
         @Published public var lineWidth: CGFloat
         
-        init(number: Int=5, lineType: LineType = .dash, lineColor: Color = .primary, lineWidth: CGFloat = 0.5) {
+        
+        
+        /// - Parameters:
+        ///   - number: `nil` means `auto`.
+        init(number: Int?=nil, lineType: LineType = .dash, lineColor: Color = .primary, lineWidth: CGFloat = 0.5) {
             self.number = number
             self.lineType = lineType
             self.lineColor = lineColor
