@@ -8,6 +8,7 @@ public struct BarChartCell<SBG: ShapeStyle, SBR: ShapeStyle>: View {
     var borderColor: SBR
     var borderWdith: CGFloat
     var touchLocation: CGFloat
+    var showDelay: Double
     @EnvironmentObject public var options: ChartOptions
 
     @State private var firstDisplay: Bool = true
@@ -16,7 +17,7 @@ public struct BarChartCell<SBG: ShapeStyle, SBR: ShapeStyle>: View {
     ///
     /// - Parameters:
     ///   - value: the heiht ratio of the this bar
-    ///   - index: index
+    ///   - index: index, for animation
     ///   - gradientColor: bar color
     ///   - touchLocation: torch location
     public init(value: Double,
@@ -24,14 +25,15 @@ public struct BarChartCell<SBG: ShapeStyle, SBR: ShapeStyle>: View {
                 backgroundColor: SBG,
                 borderColor: SBR,
                 borderWdith: CGFloat,
-                touchLocation: CGFloat) {
+                touchLocation: CGFloat,
+                showDelay: Double = 0) {
         self.value = value
         self.index = index
         self.backgroundColor = backgroundColor
         self.borderColor = borderColor
         self.borderWdith = borderWdith
         self.touchLocation = touchLocation
-        
+        self.showDelay = showDelay
     }
 
     public var body: some View {
@@ -49,7 +51,9 @@ public struct BarChartCell<SBG: ShapeStyle, SBR: ShapeStyle>: View {
                     .onDisappear {
                         self.firstDisplay = true
                     }
-                    .animation(Animation.spring().delay(Double(self.index) * 0.04), value: firstDisplay)
+                    .animation(Animation.spring().delay(Double(self.index) * 0.04 + showDelay), value: firstDisplay)
+                    .animation(Animation.spring(), value: value)
+                    .animation(Animation.easeIn, value: options.axes)
                 }   
         }
     }
@@ -77,5 +81,6 @@ struct BarChartCell_Previews: PreviewProvider {
 //                BarChartCell(value: 1, gradientColor: ColorGradient(.purple), touchLocation: CGFloat())
 //            }.environment(\.colorScheme, .dark)
         }
+        .environmentObject(ChartOptions())
     }
 }
