@@ -27,7 +27,7 @@ struct CoordinatesLineView: View {
     
     var body: some View {
         GeometryReader { chartGeometry in
-            ForEach(0..<yLineNum) { i in
+            ForEach(0..<yLineNum, id: \.self) { i in
                 let y = chartGeometry.size.height / CGFloat(yLineNum) * CGFloat(i)
                 Path { path in
                     path.move(to: .init(x: -overflow , y: y))

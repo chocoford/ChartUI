@@ -103,7 +103,8 @@ struct CoordinatesContainerView<Content: View>: View {
                 ZStack(alignment: .trailing) {
                     VStack(alignment: .trailing, spacing: 0) {
                         let num = self.options.coordinateLine?.number ?? yAxesValueNum
-                        ForEach(0..<num) { i in
+                        /// must has `id` here.
+                        ForEach(0..<num, id: \.self) { i in
                             let value: Double = maxValue / Double(num) * Double(num - i)
                             Text(maxValue > 1 ? String(Int(value)) : String(format: "%.1f", value))
                                 .offset(x: 0, y: -7)
@@ -213,8 +214,8 @@ struct CoordinatesContainerView_Previews: PreviewProvider {
         VStack {
             GeometryReader { geometry in
                 CoordinatesContainerView(geometry: geometry,
-                                         maxValue: 1000000000,
-                                         yAxesValueNum: 10,
+                                         maxValue: 35,
+                                         yAxesValueNum: 7,
                                          labels: labels) {
                     GeometryReader { g in
                         HStack{
@@ -224,7 +225,7 @@ struct CoordinatesContainerView_Previews: PreviewProvider {
                 }
                                          .environmentObject(ChartOptions(axes: .init(x: .init(showAxes: true),
                                                                                      y: .automatic),
-                                                                         coordinateLine: .init(number: 5, lineType: .dash, lineColor: .gray, lineWidth: 0.2)))
+                                                                         coordinateLine: .init(number: nil, lineType: .dash, lineColor: .gray, lineWidth: 0.2)))
                                          .environmentObject(ChartDataset(labels: ["1"], data: [ChartData(data: [1, 2], label: "1",
                                                                                                          backgroundColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.2),
                                                                                                          borderColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.8))]))
@@ -241,6 +242,6 @@ struct CoordinatesContainerView_Previews: PreviewProvider {
                 Text("add label")
             }
         }
-        
+        .frame(width: nil, height: 700, alignment: .center)
     }
 }

@@ -37,6 +37,7 @@ struct ChartDataLabelView: View {
 }
 
 struct ChartDataLabelView_Previews: PreviewProvider {
+    /// @State will not working here
     @State static var disabled: Bool = true
     static var previews: some View {
         ChartDataLabelView(label: "data 1",

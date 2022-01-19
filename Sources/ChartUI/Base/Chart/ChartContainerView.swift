@@ -48,16 +48,17 @@ struct ChartContainerView<Content: View>: View {
     }
     
     var body: some View {
+        let coordinateLineNum: Int = Int(maxValue / gap)
 //        ZStack {
             GeometryReader { geometry in
                 CoordinatesContainerView(geometry: geometry,
                                          maxValue: maxValue,
-                                         yAxesValueNum: Int(maxValue / gap),
+                                         yAxesValueNum: coordinateLineNum,
                                          labels: chartDataset.labels) {
                     ZStack {
                         // MARK: Coordinate Line
                         if options.coordinateLine != nil {
-                            CoordinatesLineView(coordinateLineNumber: Int(maxValue / gap))
+                            CoordinatesLineView(coordinateLineNumber: coordinateLineNum)
                         }
                         if chartDataset.data.count > 0 && chartDataset.data.first?.data.count ?? 0 > 0 {
                             chartView(geometry, maxValue)
@@ -89,7 +90,8 @@ struct ChartContainerView_Previews: PreviewProvider {
         ChartContainerView { geometry, maxValue  in
             Rectangle().foregroundColor(.yellow)
         }
-                           .environmentObject(ChartOptions.automatic)
-                           .environmentObject(ChartDataset())
+        .environmentObject(ChartOptions.automatic)
+        .environmentObject(ChartDataset())
+        .frame(width: nil, height: 500, alignment: .center)
     }
 }
