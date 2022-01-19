@@ -119,7 +119,7 @@ struct Barchart_Previews: PreviewProvider {
                     Task {
                         let data = (await getAvgVideoTimeByDateAPI()).suffix(7)
                         self.data.labels = data.map({$0._id})
-                        self.data.data = [ChartData(data: data.map({Double($0.userCount)}), label: "1",
+                        self.data.data = [ChartData(data: data.map({Double($0.count)}), label: "1",
                                                     backgroundColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.2),
                                                     borderColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.8))]
                     }
