@@ -59,6 +59,7 @@ public class ChartOptions: ObservableObject, Equatable {
             @Published public var showValue: Bool
             @Published public var valuePadding: CGFloat
             var minLabelUnitLength: CGFloat = 4
+            var dividedBases: [Double] = [1, 2, 5]
             
             // axes
             @Published public var showAxes: Bool
@@ -128,22 +129,38 @@ public class ChartOptions: ObservableObject, Equatable {
             self.lineWidth = lineWidth
         }
     }
+    public class Legend: ObservableObject, Equatable {
+        @Published public var show: Bool
+        
+        public static func == (lhs: ChartOptions.Legend, rhs: ChartOptions.Legend) -> Bool {
+            lhs.show == rhs.show
+        }
+        
+        init(show: Bool = true) {
+            self.show = show
+        }
+        
+        public static var automatic = Legend()
+    }
+    
     
     public static var automatic = ChartOptions(dataset: .automatic, axes: .automatic, coordinateLine: .automatic)
     
     @Published public var dataset: DatasetOptions
     @Published public var axes: AxesOptions
     @Published public var coordinateLine: CoordinateLineOptions?
+    @Published public var legend: Legend
     
     var datasetCancellable: AnyCancellable? = nil
     var axesCancellable: AnyCancellable? = nil
     var coordinateLineCancellable: AnyCancellable? = nil
+    var legendCancellable: AnyCancellable? = nil
     
-    public init(dataset: DatasetOptions = .automatic, axes: AxesOptions = .hidden, coordinateLine: CoordinateLineOptions? = nil) {
+    public init(dataset: DatasetOptions = .automatic, axes: AxesOptions = .hidden, coordinateLine: CoordinateLineOptions? = nil, legend: Legend = .automatic) {
         self.dataset = dataset
         self.axes = axes
         self.coordinateLine = coordinateLine
-        
+        self.legend = legend
         initCancellable()
     }
     
@@ -157,6 +174,9 @@ public class ChartOptions: ObservableObject, Equatable {
             self?.objectWillChange.send()
         }
         coordinateLineCancellable = coordinateLine?.objectWillChange.sink { [weak self] (_) in
+            self?.objectWillChange.send()
+        }
+        legendCancellable = legend.objectWillChange.sink { [weak self] (_) in
             self?.objectWillChange.send()
         }
     }
