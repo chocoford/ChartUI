@@ -14,7 +14,7 @@ public class ChartData: ObservableObject, Equatable, Identifiable {
     @Published public var borderColor: Color
     @Published public var borderWidth: CGFloat
 
-    public init(id: String = UUID().uuidString, data: [Double?], label: String, backgroundColor: Color = .clear, borderColor: Color = .clear, borderWidth: CGFloat = 1.0) {
+    public init(id: String = UUID().uuidString, data: [Double?], label: String, backgroundColor: Color, borderColor: Color, borderWidth: CGFloat = 1.0) {
         self.id = id
         self.label = label
         self.data = data
@@ -58,7 +58,7 @@ public class ChartDataset: ObservableObject, Equatable  {
             let dataCount = data.first?.data.count ?? 0
             self.adjustLabels(count: dataCount)
         } else {
-            print("The length of ChartDataset's labels must be equal to data's")
+            print("[ChartUI] The length of ChartDataset's labels must be equal to data's")
             self.labels = []
             self.data = []
         }
