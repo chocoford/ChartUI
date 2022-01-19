@@ -9,6 +9,7 @@ import SwiftUI
 
 struct CoordinatesContainerView<Content: View>: View {
     @EnvironmentObject public var options: ChartOptions
+    @EnvironmentObject public var dataset: ChartDataset
     
     // every time these propertis changed, view should redrawn.
     var geometry: GeometryProxy
@@ -47,28 +48,48 @@ struct CoordinatesContainerView<Content: View>: View {
     }
     
     var body: some View {
-        ZStack {
-            if let xOptions = options.axes.x {
-                VStack(spacing: 0) {
-                    if let yOptions = options.axes.y {
-                        HStack(spacing: 0) {
-                            yAxesView(yOptions)
+        VStack {
+            /// data labels
+            HStack {
+                HStack {
+                    ForEach(Array(dataset.data.enumerated()), id: \.0) { (index, data) in
+                        ChartDataLabelView(label: data.label,
+                                           backgroundColor: data.backgroundColor,
+                                           borderColor: data.borderColor,
+                                           disabled: .constant(false))
+                            .onTapGesture {
+                                
+                            }
+
+                    }
+                }
+                .frame(height: 20, alignment: .center)
+            }
+            
+            ZStack {
+                if let xOptions = options.axes.x {
+                    VStack(spacing: 0) {
+                        if let yOptions = options.axes.y {
+                            HStack(spacing: 0) {
+                                yAxesView(yOptions)
+                                content
+                            }
+                        } else {
                             content
                         }
-                    } else {
+                        xAxesView(xOptions)
+                    }
+                } else if let yOptions = options.axes.y {
+                    HStack(spacing: 0) {
+                        yAxesView(yOptions)
                         content
                     }
-                    xAxesView(xOptions)
-                }
-            } else if let yOptions = options.axes.y {
-                HStack(spacing: 0) {
-                    yAxesView(yOptions)
+                } else {
                     content
                 }
-            } else {
-                content
             }
         }
+        
 //        .onAppear {
 //            self.show = true
 //        }
@@ -204,6 +225,9 @@ struct CoordinatesContainerView_Previews: PreviewProvider {
                                          .environmentObject(ChartOptions(axes: .init(x: .init(showAxes: true),
                                                                                      y: .automatic),
                                                                          coordinateLine: .init(number: 5, lineType: .dash, lineColor: .gray, lineWidth: 0.2)))
+                                         .environmentObject(ChartDataset(labels: ["1"], data: [ChartData(data: [1, 2], label: "1",
+                                                                                                         backgroundColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.2),
+                                                                                                         borderColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.8))]))
 //                                         .onAppear {
 //                                             Task {
 //                                                 let data = (await getAvgVideoTimeByDateAPI()).prefix(50)
