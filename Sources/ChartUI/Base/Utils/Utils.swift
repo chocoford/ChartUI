@@ -75,3 +75,43 @@ func drawLine(points: [Double?],
 
     return path
 }
+
+func getGapValue(than value: Double, base: [Double]) -> Double {
+    var initialScale: Double = 1
+    
+    var power: Double = 0
+    let baseBase: Double = base.first!
+    if pow(10, power) * baseBase > value {
+        // 如果一开始就比它大，则找到第一个比它小的就是下限
+        while true {
+            power -= 1
+            let v = pow(10, power - 1) * baseBase
+            if v < value {
+                initialScale = v
+                break
+            }
+        }
+        
+    } else if  pow(10, power) * baseBase < value {
+        // 如果一开始就比它小，则找到第一个比它大的前一个就是下限
+        while true {
+            power += 1
+            if pow(10, power) * baseBase > value {
+                initialScale = pow(10, power - 2) * baseBase
+                break
+            }
+        }
+    }
+
+    var standards: [Double] = base.map({$0 * initialScale })
+    let scale: Double = 10
+    while true {
+        for standard in standards {
+            let scaledStandard = standard * scale
+            if scaledStandard > value {
+                return scaledStandard / 10
+            }
+        }
+        standards = standards.map({$0 * scale})
+    }
+}

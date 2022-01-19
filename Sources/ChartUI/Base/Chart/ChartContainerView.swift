@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ChartContainerView<Content: View>: View {
 
-    @ObservedObject public var chartDataset: ChartDataset
+    @EnvironmentObject var chartDataset: ChartDataset
     @EnvironmentObject var options: ChartOptions
     
     private let chartView: (_ geometry: GeometryProxy, _ maxValue: CGFloat) -> Content
@@ -19,7 +19,7 @@ struct ChartContainerView<Content: View>: View {
         guard let max = chartDataset.data.flatMap({$0.data}).map({$0 ?? 0}).max() else {
             return 0.1
         }
-        return getGapValue(than: max, base: [1, 2, 5])
+        return getGapValue(than: max, base: options.axes.y.dividedBases)
     }
     
     /// make max value awalys at a interger
@@ -43,9 +43,7 @@ struct ChartContainerView<Content: View>: View {
         }
     }
 
-    public init (data: ChartDataset,
-                 @ViewBuilder chartView: @escaping (_ geometry: GeometryProxy, _ maxValue: CGFloat) -> Content) {
-        chartDataset = data
+    public init (@ViewBuilder chartView: @escaping (_ geometry: GeometryProxy, _ maxValue: CGFloat) -> Content) {
         self.chartView = chartView
     }
     
@@ -64,23 +62,11 @@ struct ChartContainerView<Content: View>: View {
                         if chartDataset.data.count > 0 && chartDataset.data.first?.data.count ?? 0 > 0 {
                             chartView(geometry, maxValue)
                         }
-//                        // TODO: 不是很完美的解决方案
-//                        if options.dataset.showValue {
-//                            let fontSize = geometry.size.width / 2.5
-//                            let offset: CGFloat = CGFloat(1 - normalizedValue) * geometry.size.height
-//                            VStack(spacing: 0) {
-//                                Spacer().frame(height: offset - fontSize - 4)
-//                                Text(String(format: "%.1f", dataValue))
-//                                    .font(.custom("dataValue", size: fontSize))
-//                                    .animation(Animation.spring(), value: offset)
-//                                    .transition(.opacity)
-//                            }.frame(width: geometry.size.width)
-//                        }
                     }
                 }
             }
             .padding(.top, 6)
-            
+            .environmentObject(chartDataset)
 //            if chartData.values.count == 0 {
 //                GeometryReader { geometry in
 //                    HStack {
@@ -100,10 +86,10 @@ struct ChartContainerView<Content: View>: View {
 
 struct ChartContainerView_Previews: PreviewProvider {
     static var previews: some View {
-        ChartContainerView(data: .init()
-                           ) { geometry, maxValue  in
+        ChartContainerView { geometry, maxValue  in
             Rectangle().foregroundColor(.yellow)
         }
                            .environmentObject(ChartOptions.automatic)
+                           .environmentObject(ChartDataset())
     }
 }
