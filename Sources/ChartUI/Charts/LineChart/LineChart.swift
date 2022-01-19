@@ -9,8 +9,13 @@ public struct LineChart: View {
     @State private var touchLocation: CGPoint = .zero
     @State private var showFull: Bool = false
     @State private var showBackground: Bool = true
-    var curvedLines: Bool = false
+    var curvedLines: Bool
 
+    
+    public init(curvedLines: Bool = false) {
+        self.curvedLines = curvedLines
+    }
+    
     /// The content and behavior of the `Line`.
     /// Draw the background if showing the full line (?) and the `showBackground` option is set. Above that draw the line, and then the data indicator if the graph is currently being touched.
     /// On appear, set the frame so that the data graph metrics can be calculated. On a drag (touch) gesture, highlight the closest touched data point.

@@ -10,6 +10,11 @@ public struct BarChart: View {
         static let spacing: CGFloat = 16.0
     }
     
+    /// need explicit init
+    public init() {
+        
+    }
+    
 
     /// The content and behavior of the `BarChartRow`.
     ///
