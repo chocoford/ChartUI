@@ -11,6 +11,8 @@ import SwiftUI
 struct LineView: View {
     @State private var frame: CGRect = .zero
     var lineData: ChartData
+    /// The count of the largest data of all data's
+    var globalDataCount: Int
     var curvedLines: Bool = true
     
     @State private var showIndicator: Bool = false
@@ -87,7 +89,6 @@ struct LineView: View {
                 }
             }
 #endif
-            
             .gesture(DragGesture()
                         .onChanged({ value in
                 self.touchLocation = value.location
@@ -161,18 +162,29 @@ extension LineView {
 }
 
 struct LineView_Previews: PreviewProvider {
+    static var data: ChartData = .init()
+    static var test: String = "123"
     static var previews: some View {
-        Group {
-            LineView(lineData:  .init(data: [1, 4.0, 5, 10],
-                                                label: "data 1",
-                                                backgroundColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.2),
-                                      borderColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.8)))
-                .environmentObject(ChartOptions.automatic)
-            LineView(lineData:  .init(data: [1, 4.0, 5, 10],
-                                                label: "data 1",
-                                                backgroundColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.2),
-                                                borderColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.8)))
-                .environmentObject(ChartOptions.automatic)
-        }
+//        Group {
+//            LineView(lineData: data, globalDataCount: 50)
+//                .environmentObject(ChartOptions.automatic)
+        Text(data.data.description)
+            .onAppear {
+                test = "12345"
+                Task {
+                    let d = (await getAvgVideoTimeByDateAPI()).suffix(50)
+                    data = ChartData(data: d.map({Double($0.count)}),
+                                     label: "1",
+                                     backgroundColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.2),
+                                     borderColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.8))
+                }
+            }
+            
+//            LineView(lineData:  .init(data: [1, 4.0, 5, 10],
+//                                      label: "data 1",
+//                                      backgroundColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.2),
+//                                      borderColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.8)), globalDataCount: 5)
+//                .environmentObject(ChartOptions.automatic)
+//        }
     }
 }
