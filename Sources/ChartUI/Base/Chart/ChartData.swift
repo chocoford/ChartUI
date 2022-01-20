@@ -25,13 +25,23 @@ public class ChartData: ObservableObject, Equatable, Identifiable {
 
     public init() {
         self.id = UUID().uuidString
-        self.data = []
         self.label = ""
-        self.backgroundColor = Color.clear
-        self.borderColor = Color.clear
-        self.borderWidth = 1.0
+        self.data = [Double]()
+        self.backgroundColor = .clear
+        self.borderColor = .clear
+        self.borderWidth = 1
     }
 }
+//
+//extension ChartData where T == Double {
+//    convenience init() {
+//        self.init(id: UUID().uuidString,
+//                  data: [Double](),
+//                  label: "",
+//                  backgroundColor: .clear,
+//                  borderColor: .clear)
+//    }
+//}
 
 /// An observable wrapper for an array of data for use in any chart
 ///

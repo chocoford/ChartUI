@@ -56,7 +56,7 @@ public struct BarChart: View {
                                         }
                                     }
                                 }
-                                .scaleEffect(getScaleSize(touchLocation: self.touchLocation, index: dataIndex), anchor: .bottom)
+//                                .scaleEffect(getScaleSize(touchLocation: self.touchLocation, index: dataIndex), anchor: .bottom)
                                 .animation(Animation.easeInOut(duration: 0.2), value: chartDataset.labels)
                             } else {
                                 BarChartCell(value: 0, backgroundColor: Color.clear, borderColor: Color.clear, borderWdith: 0, touchLocation: 0)
@@ -66,20 +66,20 @@ public struct BarChart: View {
                 }
             }
             .padding(.horizontal, spacing / 2)
-            .gesture(DragGesture()
-                        .onChanged({ value in
-                let width = geometry.size.width
-                self.touchLocation = value.location.x / width
-                //                    if let currentValue = self.getCurrentValue(width: width) {
-                //                        self.chartValue.currentValue = currentValue
-                //                        self.chartValue.interactionInProgress = true
-                //                    }
-            })
-                        .onEnded({ value in
-                //                    self.chartValue.interactionInProgress = false
-                self.touchLocation = -1
-            })
-            )
+//            .gesture(DragGesture()
+//                        .onChanged({ value in
+//                let width = geometry.size.width
+//                self.touchLocation = value.location.x / width
+//                //                    if let currentValue = self.getCurrentValue(width: width) {
+//                //                        self.chartValue.currentValue = currentValue
+//                //                        self.chartValue.interactionInProgress = true
+//                //                    }
+//            })
+//                        .onEnded({ value in
+//                //                    self.chartValue.interactionInProgress = false
+//                self.touchLocation = -1
+//            })
+//            )
         }
     }
     

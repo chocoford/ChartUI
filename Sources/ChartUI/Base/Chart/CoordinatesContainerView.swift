@@ -157,6 +157,7 @@ struct CoordinatesContainerView<Content: View>: View {
         let axesLength: CGFloat = geometry.size.width - yAxesWidth
         let maxLabelLength: CGFloat = CGFloat(labels.map({$0.count}).max() ?? 0) * 8
         let labelFrameWidth: CGFloat = axesLength / CGFloat(labels.count)
+        let minLabelFrameWidth: CGFloat = 20
         // TODO: Need a more delegant way to determine whether to rotate.
         let needRotation: Bool = maxLabelLength / labelFrameWidth > 1
         /// for now, only supply 30 degree and 60 degree rotation
@@ -165,6 +166,27 @@ struct CoordinatesContainerView<Content: View>: View {
                 return Angle(degrees: -30)
             } else {
                 return Angle(degrees: -60)
+            }
+        }
+        
+        func renderLabel(content: String, width: CGFloat, index: Int) -> some View {
+            VStack {
+                if needRotation {
+                    Text(content)
+                        .fixedSize()
+                        .rotationEffect(rotationAngle, anchor: .trailing)
+                        .padding(.trailing, width / 3)
+                        .frame(width: width,
+                               height: maxLabelLength * CGFloat(sin(abs(rotationAngle.radians))),
+                               alignment: .topTrailing)
+                        .animation(.easeInOut(duration: 0.2), value: labels)
+                        .animation(Animation.spring().delay(Double(index) * 0.04), value: options.showValue)
+                } else {
+                    Text(content)
+                        .frame(width: width)
+                        .animation(.easeInOut(duration: 0.2), value: labels)
+                        .animation(Animation.spring().delay(Double(index) * 0.04), value: options.showValue)
+                }
             }
         }
         
@@ -182,21 +204,14 @@ struct CoordinatesContainerView<Content: View>: View {
             if labels.count > 0 {
                 HStack(spacing: 0) {
                     ForEach(Array(labels.enumerated()), id: \.0) { (i, label) in
-                        if needRotation {
-                            Text(label)
-                                .fixedSize()
-                                .rotationEffect(rotationAngle, anchor: .trailing)
-                                .padding(.trailing, labelFrameWidth / 3)
-                                .frame(width: labelFrameWidth,
-                                       height: maxLabelLength * CGFloat(sin(abs(rotationAngle.radians))),
-                                       alignment: .topTrailing)
-                                .animation(.easeInOut(duration: 0.2), value: labels)
-                                .animation(Animation.spring().delay(Double(i) * 0.04), value: options.showValue)
+                        if labelFrameWidth > minLabelFrameWidth {
+                            renderLabel(content: label, width: labelFrameWidth, index: i)
                         } else {
-                            Text(label)
-                                .frame(width: labelFrameWidth)
-                                .animation(.easeInOut(duration: 0.2), value: labels)
-                                .animation(Animation.spring().delay(Double(i) * 0.04), value: options.showValue)
+                            let capacity: CGFloat = ceil(minLabelFrameWidth / labelFrameWidth)
+                            let newLabelFrameWidth: CGFloat = axesLength / (CGFloat(labels.count) / capacity)
+                            if i % Int(capacity) == 0 {
+                                renderLabel(content: label,width: newLabelFrameWidth, index: i)
+                            }
                         }
                     }
                 }
@@ -209,7 +224,13 @@ struct CoordinatesContainerView<Content: View>: View {
 }
 
 struct CoordinatesContainerView_Previews: PreviewProvider {
-    @State static var labels: [String] = Array.init(repeating: "2021-01-01", count: 22)
+    @State static var labels: [String] = {
+        var result: [String] = []
+        for i in 0..<100 {
+            result.append(String(format: "2021-01-%.2i", i))
+        }
+        return result
+    }()
     static var previews: some View {
         VStack {
             GeometryReader { geometry in

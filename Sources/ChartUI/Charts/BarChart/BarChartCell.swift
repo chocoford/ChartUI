@@ -12,7 +12,7 @@ public struct BarChartCell<SBG: ShapeStyle, SBR: ShapeStyle>: View {
     @EnvironmentObject public var options: ChartOptions
 
     @State private var firstDisplay: Bool = true
-    
+    @State private var hover: Bool = false
     
     ///
     /// - Parameters:
@@ -54,6 +54,9 @@ public struct BarChartCell<SBG: ShapeStyle, SBR: ShapeStyle>: View {
                     .animation(Animation.spring().delay(Double(self.index) * 0.04 + showDelay), value: firstDisplay)
                     .animation(Animation.spring(), value: value)
                     .animation(Animation.easeIn, value: options.axes)
+                    .onHover { hover in
+                        self.hover = hover
+                    }
                 }   
         }
     }
