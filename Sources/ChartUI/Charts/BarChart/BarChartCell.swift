@@ -7,7 +7,7 @@ public struct BarChartCell<SBG: ShapeStyle, SBR: ShapeStyle>: View {
     var backgroundColor: SBG
     var borderColor: SBR
     var borderWdith: CGFloat
-    var touchLocation: CGFloat
+//    var touchLocation: CGFloat
     var showDelay: Double
     @EnvironmentObject public var options: ChartOptions
 
@@ -25,14 +25,14 @@ public struct BarChartCell<SBG: ShapeStyle, SBR: ShapeStyle>: View {
                 backgroundColor: SBG,
                 borderColor: SBR,
                 borderWdith: CGFloat,
-                touchLocation: CGFloat,
+//                touchLocation: CGFloat,
                 showDelay: Double = 0) {
         self.value = value
         self.index = index
         self.backgroundColor = backgroundColor
         self.borderColor = borderColor
         self.borderWdith = borderWdith
-        self.touchLocation = touchLocation
+//        self.touchLocation = touchLocation
         self.showDelay = showDelay
     }
 
@@ -69,11 +69,10 @@ struct BarChartCell_Previews: PreviewProvider {
             Group {
                 BarChartCell(value: 0.6,
                              backgroundColor: LinearGradient(colors: [.red, .green], startPoint: .bottom, endPoint: .top),
-                             borderColor: .red, borderWdith: 1,
-                             touchLocation: CGFloat())
+                             borderColor: .red, borderWdith: 1)
                 
                 BarChartCell(value: 0.2, backgroundColor: LinearGradient(colors: [.red, .green], startPoint: .bottom, endPoint: .top),
-                             borderColor: Color.clear, borderWdith: 1, touchLocation: CGFloat())
+                             borderColor: Color.clear, borderWdith: 1)
 //                BarChartCell(value: 1, gradientColor: ColorGradient.whiteBlack, touchLocation: CGFloat())
 //                BarChartCell(value: 1, gradientColor: ColorGradient(.purple), touchLocation: CGFloat())
             }

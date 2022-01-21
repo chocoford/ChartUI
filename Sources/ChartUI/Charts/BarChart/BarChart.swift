@@ -3,7 +3,7 @@ import SwiftUI
 public struct BarChart: View {
     @EnvironmentObject public var chartDataset: ChartDataset
     @EnvironmentObject public var options: ChartOptions
-    @State private var touchLocation: CGFloat = -1.0
+    @State private var touchedBarsGroupIndex: Int? = nil
     
     
     enum Constant {
@@ -22,64 +22,105 @@ public struct BarChart: View {
     /// Not using a drawing group for optimizing animation.
     /// As touched (dragged) the `touchLocation` is updated and the current value is highlighted.
     public var body: some View {
-        ChartContainerView { geometry, maxValue in
-            let spacing: CGFloat = (geometry.size.width) / CGFloat(chartDataset.labels.count * 3)
-            HStack(alignment: .bottom, spacing: spacing) {
-                ForEach(Array(chartDataset.labels.enumerated()), id: \.0) { (dataIndex, _) in
-                    /// Value relative to maximum value
-                    HStack(alignment: .bottom, spacing: spacing / 5) {
-                        ForEach(Array(chartDataset.data.enumerated()), id: \.1.id) { (datasetIndex, dataset) in
-                            /// leave those `nodata` alone
-                            if dataIndex < dataset.data.count {
-                                let dataValue = dataset.data[dataIndex] ?? 0.0
-                                let normalizedValue: Double = dataValue / Double(maxValue)
-                                ZStack(alignment: .bottom) {
-                                    BarChartCell(value: normalizedValue,
-                                                 index: dataIndex,
-                                                 backgroundColor: dataset.backgroundColor,
-                                                 borderColor: dataset.borderColor,
-                                                 borderWdith: dataset.borderWidth,
-                                                 touchLocation: self.touchLocation,
-                                                 showDelay: Double(datasetIndex) * 0.2)
-                                    // TODO: 不是很完美的解决方案
-                                    if options.dataset.showValue {
-                                        GeometryReader { geometry in
-                                            let offset: CGFloat = CGFloat(1 - normalizedValue) * geometry.size.height
-                                            VStack(spacing: 0) {
-                                                Spacer().frame(height: offset - 16)
-                                                Text(String(dataValue))
-                                                    .font(.footnote)
-                                                    .fixedSize()
-                                                    .animation(Animation.spring(), value: offset)
-                                                    .transition(.opacity)
-                                            }.frame(width: geometry.size.width)
+        GeometryReader { chartGeometry in
+            ZStack(alignment: .top) {
+                ChartContainerView { geometry, maxValue in
+                    let spacing: CGFloat = (geometry.size.width) / CGFloat(chartDataset.labels.count * 3)
+                    HStack(alignment: .bottom, spacing: spacing) {
+                        ForEach(Array(chartDataset.labels.enumerated()), id: \.0) { (dataIndex, _) in
+                            /// Value relative to maximum value
+                            HStack(alignment: .bottom, spacing: spacing / 5) {
+                                ForEach(Array(chartDataset.data.enumerated()), id: \.1.id) { (datasetIndex, dataset) in
+                                    /// leave those `nodata` alone
+                                    if dataIndex < dataset.data.count {
+                                        let dataValue = dataset.data[dataIndex] ?? 0.0
+                                        let normalizedValue: Double = dataValue / Double(maxValue)
+                                        ZStack(alignment: .bottom) {
+                                            BarChartCell(value: normalizedValue,
+                                                         index: dataIndex,
+                                                         backgroundColor: dataset.backgroundColor,
+                                                         borderColor: dataset.borderColor,
+                                                         borderWdith: dataset.borderWidth,
+                                                         //                                                     touchLocation: -1,
+                                                         showDelay: Double(datasetIndex) * 0.2)
+                                                .opacity(self.touchedBarsGroupIndex == nil ? 1 : self.touchedBarsGroupIndex == dataIndex ? 1 : 0.6)
+//                                                .animation(.default, value: self.touchedBarsGroupIndex)
+                                            // TODO: 不是很完美的解决方案
+                                            if options.dataset.showValue {
+                                                GeometryReader { geometry in
+                                                    let offset: CGFloat = CGFloat(1 - normalizedValue) * geometry.size.height
+                                                    VStack(spacing: 0) {
+                                                        Spacer().frame(height: offset - 16)
+                                                        Text(String(dataValue))
+                                                            .font(.footnote)
+                                                            .fixedSize()
+                                                            .animation(Animation.spring(), value: offset)
+                                                            .transition(.opacity)
+                                                    }.frame(width: geometry.size.width)
+                                                }
+                                            }
                                         }
+                                        //                                .scaleEffect(getScaleSize(touchLocation: self.touchLocation, index: dataIndex), anchor: .bottom)
+                                        .animation(Animation.easeInOut(duration: 0.2), value: chartDataset.labels)
+                                    } else {
+                                        BarChartCell(value: 0, backgroundColor: Color.clear, borderColor: Color.clear, borderWdith: 0)
                                     }
                                 }
-//                                .scaleEffect(getScaleSize(touchLocation: self.touchLocation, index: dataIndex), anchor: .bottom)
-                                .animation(Animation.easeInOut(duration: 0.2), value: chartDataset.labels)
-                            } else {
-                                BarChartCell(value: 0, backgroundColor: Color.clear, borderColor: Color.clear, borderWdith: 0, touchLocation: 0)
+                            }
+                            .onHover { hover in
+                                if hover {
+                                    self.touchedBarsGroupIndex = dataIndex
+                                }
                             }
                         }
                     }
+                    .padding(.horizontal, spacing / 2)
+                    .gesture(DragGesture()
+                                .onChanged({ value in
+                        let containerWidth: CGFloat = geometry.size.width
+                        let elementWidth: CGFloat = containerWidth / CGFloat(chartDataset.labels.count)
+                        self.touchedBarsGroupIndex = Int(value.location.x / elementWidth)
+                    })
+                                .onEnded({ value in
+                        withAnimation {
+                            self.touchedBarsGroupIndex = nil
+                        }
+                    })
+                    )
+                    .onHover { hover in
+                        if !hover {
+                            withAnimation {
+                                self.touchedBarsGroupIndex = nil
+                            }
+                            
+                        }
+                    }
+                }
+                /// Value Indicator
+                if let index = touchedBarsGroupIndex {
+                    VStack(alignment: .leading) {
+                        Text(chartDataset.labels[index])
+                            .font(.title)
+                            .bold()
+                        HStack(spacing: 4) {
+                            RoundedRectangle(cornerRadius: 4).fill(chartDataset.data[0].backgroundColor)
+                                .overlay(RoundedRectangle(cornerRadius: 4).stroke(chartDataset.data[0].borderColor))
+                                .frame(width: 10, height: 10, alignment: .center)
+                            Text("\(chartDataset.data[0].label) : \(chartDataset.data[0].data[index]!.description)")
+                                .font(.body)
+                        }
+                        
+                    }
+                        .padding()
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(.white)
+                                .shadow(color: .gray, radius: 4, x: 0, y: 0)
+                        )
+                        .transition(.opacity.animation(.default))
+                        .offset(x: 0, y: 0.1 * chartGeometry.size.height)
                 }
             }
-            .padding(.horizontal, spacing / 2)
-//            .gesture(DragGesture()
-//                        .onChanged({ value in
-//                let width = geometry.size.width
-//                self.touchLocation = value.location.x / width
-//                //                    if let currentValue = self.getCurrentValue(width: width) {
-//                //                        self.chartValue.currentValue = currentValue
-//                //                        self.chartValue.interactionInProgress = true
-//                //                    }
-//            })
-//                        .onEnded({ value in
-//                //                    self.chartValue.interactionInProgress = false
-//                self.touchLocation = -1
-//            })
-//            )
         }
     }
     
@@ -117,7 +158,7 @@ struct Barchart_Previews: PreviewProvider {
                 .environmentObject(options)
                 .onAppear {
                     Task {
-                        let data = (await getAvgVideoTimeByDateAPI()).suffix(7)
+                        let data = (await getAvgVideoTimeByDateAPI()).suffix(50)
                         self.data.labels = data.map({$0._id})
                         self.data.data = [ChartData(data: data.map({Double($0.count)}), label: "1",
                                                     backgroundColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.2),
@@ -187,7 +228,7 @@ struct Barchart_Previews: PreviewProvider {
                 }
             }
         }
-        .frame(width: nil, height: 500, alignment: .center)
+        .frame(width: nil, height: nil, alignment: .center)
     }
 }
 
