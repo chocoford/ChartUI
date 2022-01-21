@@ -104,13 +104,16 @@ public struct BarChart: View {
                         Text(chartDataset.labels[index])
                             .font(.title)
                             .bold()
-                        HStack(spacing: 4) {
-                            RoundedRectangle(cornerRadius: 4).fill(chartDataset.data[0].backgroundColor)
-                                .overlay(RoundedRectangle(cornerRadius: 4).stroke(chartDataset.data[0].borderColor))
-                                .frame(width: 10, height: 10, alignment: .center)
-                            Text("\(chartDataset.data[0].label) : \(chartDataset.data[0].data[index]!.description)")
-                                .font(.body)
+                        ForEach(chartDataset.data) { dataset in
+                            HStack(spacing: 4) {
+                                RoundedRectangle(cornerRadius: 4).fill(dataset.backgroundColor)
+                                    .overlay(RoundedRectangle(cornerRadius: 4).stroke(dataset.borderColor))
+                                    .frame(width: 10, height: 10, alignment: .center)
+                                Text("\(dataset.label) : \(dataset.data[index]!.description)")
+                                    .font(.body)
+                            }
                         }
+                        
                         
                     }
                         .padding()
