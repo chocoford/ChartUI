@@ -53,8 +53,7 @@ struct ChartContainerView<Content: View>: View {
             GeometryReader { geometry in
                 CoordinatesContainerView(geometry: geometry,
                                          maxValue: maxValue,
-                                         yAxesValueNum: coordinateLineNum,
-                                         labels: chartDataset.labels) {
+                                         yAxesValueNum: coordinateLineNum) {
                     ZStack {
                         // MARK: Coordinate Line
                         if options.coordinateLine != nil {

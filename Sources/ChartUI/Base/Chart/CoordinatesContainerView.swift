@@ -15,7 +15,7 @@ struct CoordinatesContainerView<Content: View>: View {
     var geometry: GeometryProxy
     var maxValue: Double
     var yAxesValueNum: Int
-    var labels: [String]
+//    var labels: [String]
     
     var yAxesWidth: CGFloat {
         let baseWidth: CGFloat = 30
@@ -38,12 +38,12 @@ struct CoordinatesContainerView<Content: View>: View {
     init(geometry: GeometryProxy,
          maxValue: Double,
          yAxesValueNum: Int,
-         labels: [String],
+//         labels: [String],
          @ViewBuilder content: () -> Content) {
         self.geometry = geometry
         self.maxValue = maxValue
         self.yAxesValueNum = yAxesValueNum
-        self.labels = labels
+//        self.labels = labels
         self.content = content()
     }
     
@@ -102,7 +102,7 @@ struct CoordinatesContainerView<Content: View>: View {
             if options.showValue {
                 ZStack(alignment: .trailing) {
                     VStack(alignment: .trailing, spacing: 0) {
-                        let num = self.options.coordinateLine?.number ?? yAxesValueNum
+                        let num = self.options.coordinateLine?.y.number ?? yAxesValueNum
                         /// must has `id` here.
                         ForEach(0..<num, id: \.self) { i in
                             let value: Double = maxValue / Double(num) * Double(num - i)
@@ -155,14 +155,15 @@ struct CoordinatesContainerView<Content: View>: View {
     
     func xAxesView(_ options: ChartOptions.AxesOptions.Options) -> some View {
         let axesLength: CGFloat = geometry.size.width - yAxesWidth
-        let maxLabelLength: CGFloat = CGFloat(labels.map({$0.count}).max() ?? 0) * 8
-        let labelFrameWidth: CGFloat = axesLength / CGFloat(labels.count)
+        let actualLabelLength: CGFloat = CGFloat(dataset.labels.map({$0.count}).max() ?? 0) * 8
+        let labelFrameWidth: CGFloat = axesLength / CGFloat(dataset.labels.count)
+        /// same as x Line in `CoordinatesLineView`
         let minLabelFrameWidth: CGFloat = 20
         // TODO: Need a more delegant way to determine whether to rotate.
-        let needRotation: Bool = maxLabelLength / labelFrameWidth > 1
+        let needRotation: Bool = actualLabelLength / labelFrameWidth > 1
         /// for now, only supply 30 degree and 60 degree rotation
         var rotationAngle: Angle {
-            if maxLabelLength / labelFrameWidth < 2 {
+            if actualLabelLength / labelFrameWidth < 2 {
                 return Angle(degrees: -30)
             } else {
                 return Angle(degrees: -60)
@@ -177,14 +178,14 @@ struct CoordinatesContainerView<Content: View>: View {
                         .rotationEffect(rotationAngle, anchor: .trailing)
                         .padding(.trailing, width / 3)
                         .frame(width: width,
-                               height: maxLabelLength * CGFloat(sin(abs(rotationAngle.radians))),
+                               height: actualLabelLength * CGFloat(sin(abs(rotationAngle.radians))),
                                alignment: .topTrailing)
-                        .animation(.easeInOut(duration: 0.2), value: labels)
+                        .animation(.easeInOut(duration: 0.2), value: dataset.labels)
                         .animation(Animation.spring().delay(Double(index) * 0.04), value: options.showValue)
                 } else {
                     Text(content)
                         .frame(width: width)
-                        .animation(.easeInOut(duration: 0.2), value: labels)
+                        .animation(.easeInOut(duration: 0.2), value: dataset.labels)
                         .animation(Animation.spring().delay(Double(index) * 0.04), value: options.showValue)
                 }
             }
@@ -201,17 +202,12 @@ struct CoordinatesContainerView<Content: View>: View {
             } else {
                 HStack{}.frame(height: options.axesWidth)
             }
-            if labels.count > 0 {
+            if dataset.labels.count > 0 {
                 HStack(spacing: 0) {
-                    ForEach(Array(labels.enumerated()), id: \.0) { (i, label) in
-                        if labelFrameWidth > minLabelFrameWidth {
-                            renderLabel(content: label, width: labelFrameWidth, index: i)
-                        } else {
-                            let capacity: CGFloat = ceil(minLabelFrameWidth / labelFrameWidth)
-                            let newLabelFrameWidth: CGFloat = axesLength / (CGFloat(labels.count) / capacity)
-                            if i % Int(capacity) == 0 {
-                                renderLabel(content: label,width: newLabelFrameWidth, index: i)
-                            }
+                    ForEach(Array(dataset.labels.enumerated()), id: \.0) { (i, label) in
+                        let capacity: CGFloat = ceil(minLabelFrameWidth / labelFrameWidth)
+                        if i % Int(capacity) == 0 {
+                            renderLabel(content: label, width: labelFrameWidth * capacity, index: i)
                         }
                     }
                 }
@@ -236,8 +232,7 @@ struct CoordinatesContainerView_Previews: PreviewProvider {
             GeometryReader { geometry in
                 CoordinatesContainerView(geometry: geometry,
                                          maxValue: 35,
-                                         yAxesValueNum: 7,
-                                         labels: labels) {
+                                         yAxesValueNum: 7) {
                     GeometryReader { g in
                         HStack{
                             
@@ -246,8 +241,8 @@ struct CoordinatesContainerView_Previews: PreviewProvider {
                 }
                                          .environmentObject(ChartOptions(axes: .init(x: .init(showAxes: true),
                                                                                      y: .automatic),
-                                                                         coordinateLine: .init(number: nil, lineType: .dash, lineColor: .gray, lineWidth: 0.2)))
-                                         .environmentObject(ChartDataset(labels: ["1"], data: [ChartData(data: [1, 2], label: "1",
+                                                                         coordinateLine: .automatic))
+                                         .environmentObject(ChartDataset(labels: labels, data: [ChartData(data: [1, 2], label: "1",
                                                                                                          backgroundColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.2),
                                                                                                          borderColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.8))]))
 //                                         .onAppear {

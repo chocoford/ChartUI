@@ -101,34 +101,67 @@ public class ChartOptions: ObservableObject, Equatable {
     }
     public class CoordinateLineOptions: ObservableObject, Equatable {
         public static func == (lhs: ChartOptions.CoordinateLineOptions, rhs: ChartOptions.CoordinateLineOptions) -> Bool {
-            lhs.number == rhs.number &&
-            lhs.lineType == rhs.lineType &&
-            lhs.lineColor == rhs.lineColor &&
-            lhs.lineWidth == rhs.lineWidth
+            lhs.x == rhs.x && lhs.y == rhs.y
         }
         
-        public enum LineType {
-            case solid, dash, dot
+        public static var automatic = CoordinateLineOptions(x: .automatic, y: .automatic)
+        public static var hidden = CoordinateLineOptions(x: .hidden, y: .hidden)
+        
+        public class Options: ObservableObject, Equatable {
+            public static func == (lhs: ChartOptions.CoordinateLineOptions.Options, rhs: ChartOptions.CoordinateLineOptions.Options) -> Bool {
+                lhs.number == rhs.number &&
+                lhs.lineType == rhs.lineType &&
+                lhs.lineColor == rhs.lineColor &&
+                lhs.lineWidth == rhs.lineWidth
+            }
+            
+            public enum LineType {
+                case solid, dash, dot
+            }
+            
+            public static var automatic = Options(number: nil, lineType: .solid, lineColor: .gray.opacity(0.4), lineWidth: 0.5)
+            public static var hidden = Options(number: nil, lineType: .solid, lineColor: .clear, lineWidth: 0)
+            
+            @Published public var number: Int?
+            @Published public var lineType: LineType
+            @Published public var lineColor: Color
+            @Published public var lineWidth: CGFloat
+            
+
+            
+            /// - Parameters:
+            ///   - number: `nil` means `auto`.
+            init(number: Int?=nil, lineType: LineType = .dash, lineColor: Color = .primary, lineWidth: CGFloat = 0.5) {
+                self.number = number
+                self.lineType = lineType
+                self.lineColor = lineColor
+                self.lineWidth = lineWidth
+            }
+            
         }
         
-        public static var automatic = CoordinateLineOptions()
+        @Published public var x: Options
+        @Published public var y: Options
         
-        @Published public var number: Int?
-        @Published public var lineType: LineType
-        @Published public var lineColor: Color
-        @Published public var lineWidth: CGFloat
+        var xCancellable: AnyCancellable? = nil
+        var yCancellable: AnyCancellable? = nil
         
+        public init(x: Options = .automatic, y: Options = .automatic) {
+            self.x = x
+            self.y = y
+            initCancellable()
+        }
         
-        
-        /// - Parameters:
-        ///   - number: `nil` means `auto`.
-        init(number: Int?=nil, lineType: LineType = .dash, lineColor: Color = .primary, lineWidth: CGFloat = 0.5) {
-            self.number = number
-            self.lineType = lineType
-            self.lineColor = lineColor
-            self.lineWidth = lineWidth
+        func initCancellable() {
+            xCancellable = x.objectWillChange.sink { [weak self] (_) in
+                self?.objectWillChange.send()
+            }
+            yCancellable = y.objectWillChange.sink { [weak self] (_) in
+                self?.objectWillChange.send()
+            }
         }
     }
+    
     public class Legend: ObservableObject, Equatable {
         @Published public var show: Bool
         

@@ -75,6 +75,7 @@ public struct BarChart: View {
                         }
                     }
                     .padding(.horizontal, spacing / 2)
+                    #if os(iOS)
                     .gesture(DragGesture()
                                 .onChanged({ value in
                         let containerWidth: CGFloat = geometry.size.width
@@ -87,6 +88,7 @@ public struct BarChart: View {
                         }
                     })
                     )
+                    #endif
                     .onHover { hover in
                         if !hover {
                             withAnimation {
