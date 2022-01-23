@@ -163,14 +163,11 @@ extension LineView {
 
 struct LineView_Previews: PreviewProvider {
     static var data: ChartData = .init()
-    static var test: String = "123"
     static var previews: some View {
 //        Group {
-//            LineView(lineData: data, globalDataCount: 50)
-//                .environmentObject(ChartOptions.automatic)
-        Text(data.data.description)
+            LineView(lineData: data, globalDataCount: 50)
+                .environmentObject(ChartOptions.automatic)
             .onAppear {
-                test = "12345"
                 Task {
                     let d = (await getAvgVideoTimeByDateAPI()).suffix(50)
                     data = ChartData(data: d.map({Double($0.count)}),

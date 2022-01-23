@@ -14,6 +14,7 @@ struct ChartContainerView<Content: View>: View {
     
     private let chartView: (_ geometry: GeometryProxy, _ maxValue: CGFloat) -> Content
     
+    var alignToValue: Bool
     
     var gap: Double {
         guard let max = chartDataset.data.flatMap({$0.data}).map({$0 ?? 0}).max() else {
@@ -43,7 +44,9 @@ struct ChartContainerView<Content: View>: View {
         }
     }
 
-    public init (@ViewBuilder chartView: @escaping (_ geometry: GeometryProxy, _ maxValue: CGFloat) -> Content) {
+    public init (alignToValue: Bool = false,
+        @ViewBuilder chartView: @escaping (_ geometry: GeometryProxy, _ maxValue: CGFloat) -> Content) {
+        self.alignToValue = alignToValue
         self.chartView = chartView
     }
     
@@ -53,11 +56,12 @@ struct ChartContainerView<Content: View>: View {
             GeometryReader { geometry in
                 CoordinatesContainerView(geometry: geometry,
                                          maxValue: maxValue,
-                                         yAxesValueNum: coordinateLineNum) {
+                                         yAxesValueNum: coordinateLineNum,
+                                         alignToLine: alignToValue) {
                     ZStack {
                         // MARK: Coordinate Line
                         if options.coordinateLine != nil {
-                            CoordinatesLineView(coordinateLineNumber: coordinateLineNum)
+                            CoordinatesLineView(coordinateLineNumber: coordinateLineNum, alignToLabel: alignToValue)
                         }
                         if chartDataset.data.count > 0 && chartDataset.data.first?.data.count ?? 0 > 0 {
                             chartView(geometry, maxValue)

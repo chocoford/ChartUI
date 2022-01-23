@@ -13,9 +13,12 @@ struct CoordinatesLineView: View {
     @EnvironmentObject var dataset: ChartDataset
     @Binding var overflow: CGFloat
     
-    init(overflow: Binding<CGFloat> = .constant(6), coordinateLineNumber: Int) {
+    var alignToLabel: Bool
+    
+    init(overflow: Binding<CGFloat> = .constant(6), coordinateLineNumber: Int, alignToLabel: Bool = false) {
         self._overflow = overflow
         self.coordinateLineNumber = coordinateLineNumber
+        self.alignToLabel = alignToLabel
     }
     
     var yLineNum: Int {
@@ -43,14 +46,16 @@ struct CoordinatesLineView: View {
                 }
                 
                 /// x
-                let labelFrameWidth: CGFloat = chartGeometry.size.width / CGFloat(dataset.labels.count)
+                let labelFrameWidth: CGFloat = chartGeometry.size.width / CGFloat(alignToLabel ? dataset.labels.count - 1 : dataset.labels.count)
                 /// same as x Line in `CoordinatesContainerView`
                 let minLabelFrameWidth: CGFloat = 20
                 /// 1 if minLabelFrameWidth less than labelFrameWidth
                 let capacity: Int = Int(ceil(minLabelFrameWidth / labelFrameWidth))
-                ForEach(Array(dataset.labels.enumerated()), id: \.0) { (i, _) in
+                ForEach(Array((alignToLabel ? Array(dataset.labels.dropFirst()) : dataset.labels).enumerated()),
+                        id: \.0) { (i, _) in
                     let x: CGFloat = CGFloat(i) * labelFrameWidth
-                    if i % capacity == 0 {
+                    let _i = alignToLabel ? i + 1 : i
+                    if _i % capacity == 0 {
                         Path { path in
                             path.move(to: .init(x: x, y: 0))
                             path.addLine(to: .init(x: x, y: chartGeometry.size.height + overflow))

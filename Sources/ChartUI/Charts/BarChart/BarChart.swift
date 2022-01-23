@@ -1,6 +1,7 @@
 import SwiftUI
 
 public struct BarChart: View {
+    @Environment(\.colorScheme) var currentMode
     @EnvironmentObject public var chartDataset: ChartDataset
     @EnvironmentObject public var options: ChartOptions
     @State private var touchedBarsGroupIndex: Int? = nil
@@ -15,7 +16,6 @@ public struct BarChart: View {
         
     }
     
-
     /// The content and behavior of the `BarChartRow`.
     ///
     /// Shows each `BarChartCell` in an `HStack`; may be scaled up if it's the one currently being touched.
@@ -109,18 +109,16 @@ public struct BarChart: View {
                                 RoundedRectangle(cornerRadius: 4).fill(dataset.backgroundColor)
                                     .overlay(RoundedRectangle(cornerRadius: 4).stroke(dataset.borderColor))
                                     .frame(width: 10, height: 10, alignment: .center)
-                                Text("\(dataset.label) : \(dataset.data[index]!.description)")
+                                Text("\(dataset.label) : \((dataset.data[index] ?? 0).description)")
                                     .font(.body)
                             }
                         }
-                        
-                        
                     }
                         .padding()
                         .background(
                             RoundedRectangle(cornerRadius: 8)
-                                .fill(.white)
-                                .shadow(color: .gray, radius: 4, x: 0, y: 0)
+                                .fill(currentMode == .dark ? .black : .white)
+                                .shadow(color: .primary, radius: 4, x: 0, y: 0)
                         )
                         .transition(.opacity.animation(.default))
                         .offset(x: 0, y: 0.1 * chartGeometry.size.height)
@@ -157,83 +155,87 @@ struct Barchart_Previews: PreviewProvider {
 
     static var options: ChartOptions = .init(dataset: .init(showValue: false), axes: .automatic, coordinateLine: .automatic)
     static var previews: some View {
-        VStack {
-            BarChart()
-                .environmentObject(data)
-                .environmentObject(options)
-                .onAppear {
-                    Task {
-                        let data = (await getAvgVideoTimeByDateAPI()).suffix(50)
-                        self.data.labels = data.map({$0._id})
-                        self.data.data = [ChartData(data: data.map({Double($0.count)}), label: "1",
-                                                    backgroundColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.2),
-                                                    borderColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.8))]
+        ForEach(ColorScheme.allCases, id: \.self) {
+            VStack {
+                BarChart()
+                    .environmentObject(data)
+                    .environmentObject(options)
+                    .onAppear {
+                        Task {
+                            let data = (await getAvgVideoTimeByDateAPI()).suffix(50)
+                            self.data.labels = data.map({$0._id})
+                            self.data.data = [ChartData(data: data.map({Double($0.count)}), label: "1",
+                                                        backgroundColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.2),
+                                                        borderColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.8))]
+                        }
+                    }
+                Button {
+                    for i in 0..<data.data.count {
+                        var newData: [Double] = []
+                        for _ in 0..<data.data[i].data.count {
+                            newData.append(Double.random(in: 0...100))
+                        }
+                        withAnimation {
+                            data.data[i].data = .init(newData)
+                        }
+                        
+                    }
+                } label: {
+                    Text("随机数据")
+                }
+                HStack {
+                    Button {
+                        options.axes = .automatic
+                    } label: {
+                        Text("显示坐标(值)")
+                    }
+                    Button {
+                        options.axes = .hidden
+                    } label: {
+                        Text("隐藏坐标(值)")
+                    }
+                    Button {
+                        options.axes.x.showValue = true
+                        options.axes.y.showValue = true
+                    } label: {
+                        Text("显示坐标值")
+                    }
+                    Button {
+                        options.axes.x.showValue = false
+                        options.axes.y.showValue = false
+                    } label: {
+                        Text("隐藏坐标值")
                     }
                 }
-            Button {
-                for i in 0..<data.data.count {
-                    var newData: [Double] = []
-                    for _ in 0..<data.data[i].data.count {
-                        newData.append(Double.random(in: 0...100))
+                HStack {
+                    Button {
+                        data.data[0].data.append(Double.random(in: 0..<10))
+                    } label: {
+                        Text("添加数据")
                     }
-                    withAnimation {
-                        data.data[i].data = .init(newData)
+                    Button {
+                        data.data[0].data.removeLast()
+                    } label: {
+                        Text("减少数据")
                     }
-                    
                 }
-            } label: {
-                Text("随机数据")
-            }
-            HStack {
-                Button {
-                    options.axes = .automatic
-                } label: {
-                    Text("显示坐标(值)")
-                }
-                Button {
-                    options.axes = .hidden
-                } label: {
-                    Text("隐藏坐标(值)")
-                }
-                Button {
-                    options.axes.x.showValue = true
-                    options.axes.y.showValue = true
-                } label: {
-                    Text("显示坐标值")
-                }
-                Button {
-                    options.axes.x.showValue = false
-                    options.axes.y.showValue = false
-                } label: {
-                    Text("隐藏坐标值")
+                HStack {
+                    Button {
+                        data.labels.append(Int.random(in: 0..<10).description)
+                    } label: {
+                        Text("添加标签")
+                    }
+                    Button {
+                        data.labels.removeLast()
+                    } label: {
+                        Text("减少标签")
+                    }
                 }
             }
-            HStack {
-                Button {
-                    data.data[0].data.append(Double.random(in: 0..<10))
-                } label: {
-                    Text("添加数据")
-                }
-                Button {
-                    data.data[0].data.removeLast()
-                } label: {
-                    Text("减少数据")
-                }
-            }
-            HStack {
-                Button {
-                    data.labels.append(Int.random(in: 0..<10).description)
-                } label: {
-                    Text("添加标签")
-                }
-                Button {
-                    data.labels.removeLast()
-                } label: {
-                    Text("减少标签")
-                }
-            }
+            .frame(width: nil, height: nil, alignment: .center)
+            .preferredColorScheme($0)
         }
-        .frame(width: nil, height: nil, alignment: .center)
+
     }
 }
 

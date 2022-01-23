@@ -16,6 +16,7 @@ struct CoordinatesContainerView<Content: View>: View {
     var maxValue: Double
     var yAxesValueNum: Int
 //    var labels: [String]
+    var alignToLine: Bool
     
     var yAxesWidth: CGFloat {
         let baseWidth: CGFloat = 30
@@ -39,11 +40,13 @@ struct CoordinatesContainerView<Content: View>: View {
          maxValue: Double,
          yAxesValueNum: Int,
 //         labels: [String],
+         alignToLine: Bool = true,
          @ViewBuilder content: () -> Content) {
         self.geometry = geometry
         self.maxValue = maxValue
         self.yAxesValueNum = yAxesValueNum
 //        self.labels = labels
+        self.alignToLine = alignToLine
         self.content = content()
     }
     
@@ -156,7 +159,7 @@ struct CoordinatesContainerView<Content: View>: View {
     func xAxesView(_ options: ChartOptions.AxesOptions.Options) -> some View {
         let axesLength: CGFloat = geometry.size.width - yAxesWidth
         let actualLabelLength: CGFloat = CGFloat(dataset.labels.map({$0.count}).max() ?? 0) * 8
-        let labelFrameWidth: CGFloat = axesLength / CGFloat(dataset.labels.count)
+        let labelFrameWidth: CGFloat = axesLength / CGFloat(alignToLine ? dataset.labels.count - 1 : dataset.labels.count)
         /// same as x Line in `CoordinatesLineView`
         let minLabelFrameWidth: CGFloat = 20
         // TODO: Need a more delegant way to determine whether to rotate.
@@ -171,7 +174,7 @@ struct CoordinatesContainerView<Content: View>: View {
         }
         
         func renderLabel(content: String, width: CGFloat, index: Int) -> some View {
-            VStack {
+            VStack() {
                 if needRotation {
                     Text(content)
                         .fixedSize()
@@ -203,14 +206,28 @@ struct CoordinatesContainerView<Content: View>: View {
                 HStack{}.frame(height: options.axesWidth)
             }
             if dataset.labels.count > 0 {
+                let capacity: CGFloat = ceil(minLabelFrameWidth / labelFrameWidth)
+                if alignToLine, let firstLabel = dataset.labels.first {
+                    VStack(alignment: .leading) {
+                        renderLabel(content: firstLabel, width: labelFrameWidth * capacity, index: 0)
+                            .offset(x: -0.5 * labelFrameWidth * capacity, y: 0)
+                    }
+                    .frame(width: axesLength, height: nil, alignment: .leading)
+                }
                 HStack(spacing: 0) {
-                    ForEach(Array(dataset.labels.enumerated()), id: \.0) { (i, label) in
-                        let capacity: CGFloat = ceil(minLabelFrameWidth / labelFrameWidth)
-                        if i % Int(capacity) == 0 {
-                            renderLabel(content: label, width: labelFrameWidth * capacity, index: i)
+                    ForEach(Array((alignToLine ? Array(dataset.labels.dropFirst()) : dataset.labels).enumerated()),
+                            id: \.0) { (i, label) in
+                        let ii = alignToLine ? i + 1 : i
+                        if ii % Int(capacity) == 0 {
+                            renderLabel(content: label, width: labelFrameWidth * capacity, index: ii)
+                                .if(alignToLine, transform: { view in
+                                    view
+                                        .offset(x: 0.5 * labelFrameWidth * capacity, y: 0)
+                                })
                         }
                     }
                 }
+//                .border(.red)
             }
         }.padding(.leading, yAxesWidth)
             .padding(.top, 6)
@@ -222,7 +239,7 @@ struct CoordinatesContainerView<Content: View>: View {
 struct CoordinatesContainerView_Previews: PreviewProvider {
     @State static var labels: [String] = {
         var result: [String] = []
-        for i in 0..<100 {
+        for i in 0..<20 {
             result.append(String(format: "2021-01-%.2i", i))
         }
         return result
