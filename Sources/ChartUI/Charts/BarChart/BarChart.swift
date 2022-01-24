@@ -100,28 +100,7 @@ public struct BarChart: View {
                 }
                 /// Value Indicator
                 if let index = touchedBarsGroupIndex {
-                    VStack(alignment: .leading) {
-                        Text(chartDataset.labels[index])
-                            .font(.title)
-                            .bold()
-                        ForEach(chartDataset.data) { dataset in
-                            HStack(spacing: 4) {
-                                RoundedRectangle(cornerRadius: 4).fill(dataset.backgroundColor)
-                                    .overlay(RoundedRectangle(cornerRadius: 4).stroke(dataset.borderColor))
-                                    .frame(width: 10, height: 10, alignment: .center)
-                                Text("\(dataset.label) : \((dataset.data[index] ?? 0).description)")
-                                    .font(.body)
-                            }
-                        }
-                    }
-                        .padding()
-                        .background(
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(currentMode == .dark ? .black : .white)
-                                .shadow(color: .primary, radius: 4, x: 0, y: 0)
-                        )
-                        .transition(.opacity.animation(.default))
-                        .offset(x: 0, y: 0.1 * chartGeometry.size.height)
+                    ChartValueShowView(geometry: chartGeometry, dataIndex: index)
                 }
             }
         }

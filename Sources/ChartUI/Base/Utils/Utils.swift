@@ -61,8 +61,28 @@ func drawLine(points: [Double?],
         path.closeSubpath()
     }
     
-    
-    if drawPoint {
+    /// cannot draw point here
+//    if drawPoint {
+//        for (index, value) in points.enumerated() {
+//            if let value = value {
+//                let point = CGPoint(x: step * CGFloat(index) - 2.5,
+//                                    y: CGFloat(value - offset) * valueRatio - 2.5)
+//                path.addEllipse(in: .init(origin: point,
+//                                          size: .init(width: 5, height: 5)))
+//            }
+//        }
+//    }
+
+    return path
+}
+
+func drawPoints(points: [Double?],
+                step: CGFloat,
+                valueRatio: CGFloat = 1) -> Path {
+    Path { path in
+        guard points.count > 1, let offset = points.compactMap({$0}).min() else {
+            return
+        }
         for (index, value) in points.enumerated() {
             if let value = value {
                 let point = CGPoint(x: step * CGFloat(index) - 2.5,
@@ -72,9 +92,9 @@ func drawLine(points: [Double?],
             }
         }
     }
-
-    return path
 }
+
+
 
 func getGapValue(than value: Double, base: [Double]) -> Double {
     var initialScale: Double = 1

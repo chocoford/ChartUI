@@ -10,17 +10,60 @@ public struct LineChart: View {
     @State private var showFull: Bool = false
     @State private var showBackground: Bool = true
     var curvedLines: Bool
-
+    
+    @State private var chartContainerWidth: CGFloat? = nil
+    @State private var touchedLocationX: CGFloat? = nil
+    @State private var touchedLocationY: CGFloat? = nil
     
     public init(curvedLines: Bool = false) {
         self.curvedLines = curvedLines
     }
     
     public var body: some View {
-        ChartContainerView(alignToValue: true) { geometry, maxValue in
-            ZStack {
-                ForEach(chartDataset.data) { data in
-                    renderLineView(data)
+        GeometryReader { chartGeometry in
+            ZStack(alignment: .top) {
+                ChartContainerView(alignToValue: true) { geometry, maxValue in
+                    ZStack {
+                        ForEach(chartDataset.data) { data in
+                            renderLineView(data)
+                        }
+                    }
+                    
+                    // FIXME: pass width to value show view. But it is ugly
+                    .onAppear(perform: {
+                        self.chartContainerWidth = geometry.size.width
+                    })
+                    .onChange(of: geometry.size.width, perform: { newValue in
+                        self.chartContainerWidth = newValue
+                    })
+#if os(iOS)
+                    .gesture(
+                        DragGesture()
+                            .onChanged({ value in
+                                self.touchedLocationX = value.location.x
+                                self.touchedLocationY = value.location.y
+                            })
+                            .onEnded({ value in
+                                withAnimation {
+                                    self.touchedLocationX = nil
+                                    self.touchedLocationY = nil
+                                }
+                            })
+                    )
+#endif
+                    .onHover { hover in
+                        if !hover {
+                            withAnimation {
+                                self.touchedLocationX = nil
+                            }
+                        }
+                    }
+                }
+                /// Value Indicator
+                if let location = touchedLocationX, let containerWidth = chartContainerWidth {
+                    let elementWidth: CGFloat = containerWidth / CGFloat(chartDataset.labels.count - 1)
+                    ChartValueShowView(geometry: chartGeometry,
+                                       dataIndex: Int(location / elementWidth + 0.5))
                 }
             }
         }
@@ -31,7 +74,7 @@ public struct LineChart: View {
         if difference > 0 {
             data.data = data.data + Array<Double?>.init(repeating: nil, count: difference)
         }
-        return LineView(lineData: data, globalDataCount: chartDataset.labels.count)
+        return LineView(lineData: data, globalDataCount: chartDataset.labels.count, touchLocation: touchedLocationX)
     }
 }
 

@@ -10,7 +10,7 @@ extension Path {
     func trimmedPath(for percent: CGFloat) -> Path {
         let boundsDistance: CGFloat = 0.001
         let completion: CGFloat = 1 - boundsDistance
-        
+
         let pct = percent > 1 ? 0 : (percent < 0 ? 1 : percent)
 
 		// Start/end points centered around given percentage, but capped if right at the very end
@@ -29,18 +29,23 @@ extension Path {
         return CGPoint(x: path.boundingRect.midX, y: path.boundingRect.midY)
     }
 
-	/// <#Description#>
-	/// - Parameter maxX: <#maxX description#>
-	/// - Returns: <#description#>
-    func point(to maxX: CGFloat) -> CGPoint {
+    func yValue(at x: CGFloat) -> CGFloat {
+        let total: CGFloat = length
+        let sub: CGFloat = length(to: x)
+        let percent: CGFloat = sub / total
+        return point(for: percent).y
+    }
+    
+	/// get point at `x` of the path
+	/// - Parameter x: the x value of the
+    func point(at x: CGFloat) -> CGPoint {
         let total = length
-        let sub = length(to: maxX)
+        let sub = length(to: x)
         let percent = sub / total
         return point(for: percent)
     }
     
-	/// <#Description#>
-	/// - Returns: <#description#>
+	/// path length
    var length: CGFloat {
         var ret: CGFloat = 0.0
         var start: CGPoint?
@@ -54,17 +59,17 @@ extension Path {
                 }
                 point = to
             case .line(let to):
-                ret += point.line(to: to)
+                ret += point.lineLength(to: to)
                 point = to
             case .quadCurve(let to, let control):
-                ret += point.quadCurve(to: to, control: control)
+                ret += point.quadCurveLength(to: to, control: control)
                 point = to
             case .curve(let to, let control1, let control2):
-                ret += point.curve(to: to, control1: control1, control2: control2)
+                ret += point.bezierCurveLength(to: to, control1: control1, control2: control2)
                 point = to
             case .closeSubpath:
                 if let to = start {
-                    ret += point.line(to: to)
+                    ret += point.lineLength(to: to)
                     point = to
                 }
                 start = nil
@@ -73,10 +78,10 @@ extension Path {
         return ret
     }
 
-	/// <#Description#>
-	/// - Parameter maxX: <#maxX description#>
-	/// - Returns: <#description#>
-    func length(to maxX: CGFloat) -> CGFloat {
+	/// get length from origin to `end`
+	/// - Parameter end: the end point X-axis length
+	/// - Returns: the length from origin to `end`
+    func length(to end: CGFloat) -> CGFloat {
         var ret: CGFloat = 0.0
         var start: CGPoint?
         var point = CGPoint.zero
@@ -88,7 +93,7 @@ extension Path {
             }
             switch ele {
             case .move(let to):
-                if to.x > maxX {
+                if to.x > end {
                     finished = true
                     return
                 }
@@ -97,31 +102,32 @@ extension Path {
                 }
                 point = to
             case .line(let to):
-                if to.x > maxX {
+                if to.x > end {
                     finished = true
-                    ret += point.line(to: to, x: maxX)
+                    ret += point.lineLength(to: to, x: end)
                     return
                 }
-                ret += point.line(to: to)
+                ret += point.lineLength(to: to)
                 point = to
             case .quadCurve(let to, let control):
-                if to.x > maxX {
+                if to.x > end {
                     finished = true
-                    ret += point.quadCurve(to: to, control: control, x: maxX)
+                    ret += point.quadCurveLength(to: to, control: control, x: end)
                     return
                 }
-                ret += point.quadCurve(to: to, control: control)
+                ret += point.quadCurveLength(to: to, control: control)
                 point = to
             case .curve(let to, let control1, let control2):
-                if to.x > maxX {
+                if to.x > end {
                     finished = true
-                    ret += point.curve(to: to, control1: control1, control2: control2, x: maxX)
+                    ret += point.bezierCurveLength(to: to, control1: control1, control2: control2, x: end)
                     return
                 }
-                ret += point.curve(to: to, control1: control1, control2: control2)
+                ret += point.bezierCurveLength(to: to, control1: control1, control2: control2)
                 point = to
             case .closeSubpath:
-                fatalError("Can't include closeSubpath")
+//                fatalError("Can't include closeSubpath")
+                break
             }
         }
         return ret
@@ -219,60 +225,26 @@ extension Path {
 
 extension CGPoint {
 
-	/// <#Description#>
-	/// - Parameters:
-	///   - to: <#to description#>
-	///   - x: <#x description#>
-	/// - Returns: <#description#>
+	/// get the point at the line which is from `self` to `to`  at `x`.
     func point(to: CGPoint, x: CGFloat) -> CGPoint {
-        let a = (to.y - self.y) / (to.x - self.x)
-        let y = self.y + (x - self.x) * a
+        let k = (to.y - self.y) / (to.x - self.x)
+        let y = self.y + (x - self.x) * k
         return CGPoint(x: x, y: y)
     }
 
-	/// <#Description#>
-	/// - Parameter to: <#to description#>
-	/// - Returns: <#description#>
-    func line(to: CGPoint) -> CGFloat {
-        dist(to: to)
-    }
-
-	/// <#Description#>
-	/// - Parameters:
-	///   - to: <#to description#>
-	///   - x: <#x description#>
-	/// - Returns: <#description#>
-    func line(to: CGPoint, x: CGFloat) -> CGFloat {
-        dist(to: point(to: to, x: x))
-    }
-
-	/// <#Description#>
-	/// - Parameters:
-	///   - to: <#to description#>
-	///   - control: <#control description#>
-	/// - Returns: <#description#>
-    func quadCurve(to: CGPoint, control: CGPoint) -> CGFloat {
-        var dist: CGFloat = 0
-        let steps: CGFloat = 100
-        
-        for i in 0..<Int(steps) {
-            let t0 = CGFloat(i) / steps
-            let t1 = CGFloat(i+1) / steps
-            let a = point(to: to, t: t0, control: control)
-            let b = point(to: to, t: t1, control: control)
-            
-            dist += a.line(to: b)
+	/// get length of the line from `self` to `to`, trim by `x`
+    func lineLength(to: CGPoint, x: CGFloat? = nil) -> CGFloat {
+        if x != nil {
+            return dist(to: point(to: to, x: x!))
+        } else {
+            return dist(to: to)
         }
-        return dist
     }
 
-	/// <#Description#>
-	/// - Parameters:
-	///   - to: <#to description#>
-	///   - control: <#control description#>
-	///   - x: <#x description#>
-	/// - Returns: <#description#>
-    func quadCurve(to: CGPoint, control: CGPoint, x: CGFloat) -> CGFloat {
+	/// Get quad curve length from `self` to `to`, divided by `x`
+    ///
+    /// divide quadCurve to many small straight lines.
+    func quadCurveLength(to: CGPoint, control: CGPoint, x: CGFloat? = nil) -> CGFloat {
         var dist: CGFloat = 0
         let steps: CGFloat = 100
         
@@ -281,28 +253,24 @@ extension CGPoint {
             let t1 = CGFloat(i+1) / steps
             let a = point(to: to, t: t0, control: control)
             let b = point(to: to, t: t1, control: control)
-            
-            if a.x >= x {
-                return dist
-            } else if b.x > x {
-                dist += a.line(to: b, x: x)
-                return dist
-            } else if b.x == x {
-                dist += a.line(to: b)
-                return dist
+            if let x = x {
+                if a.x >= x {
+                    return dist
+                } else if b.x > x {
+                    dist += a.lineLength(to: b, x: x)
+                    return dist
+                } else if b.x == x {
+                    dist += a.lineLength(to: b)
+                    return dist
+                }
             }
             
-            dist += a.line(to: b)
+            dist += a.lineLength(to: b)
         }
         return dist
     }
 
-	/// <#Description#>
-	/// - Parameters:
-	///   - to: <#to description#>
-	///   - t: <#t description#>
-	///   - control: <#control description#>
-	/// - Returns: <#description#>
+	/// get the point to `to` at a quad curve with control point `control`.
     func point(to: CGPoint, t: CGFloat, control: CGPoint) -> CGPoint {
         let x = CGPoint.value(x: self.x, y: to.x, t: t, c: control.x)
         let y = CGPoint.value(x: self.y, y: to.y, t: t, c: control.y)
@@ -310,37 +278,8 @@ extension CGPoint {
         return CGPoint(x: x, y: y)
     }
 
-	/// <#Description#>
-	/// - Parameters:
-	///   - to: <#to description#>
-	///   - control1: <#control1 description#>
-	///   - control2: <#control2 description#>
-	/// - Returns: <#description#>
-    func curve(to: CGPoint, control1: CGPoint, control2: CGPoint) -> CGFloat {
-        var dist: CGFloat = 0
-        let steps: CGFloat = 100
-        
-        for i in 0..<Int(steps) {
-            let t0 = CGFloat(i) / steps
-            let t1 = CGFloat(i+1) / steps
-            
-            let a = point(to: to, t: t0, control1: control1, control2: control2)
-            let b = point(to: to, t: t1, control1: control1, control2: control2)
-            
-            dist += a.line(to: b)
-        }
-        
-        return dist
-    }
 
-	/// <#Description#>
-	/// - Parameters:
-	///   - to: <#to description#>
-	///   - control1: <#control1 description#>
-	///   - control2: <#control2 description#>
-	///   - x: <#x description#>
-	/// - Returns: <#description#>
-    func curve(to: CGPoint, control1: CGPoint, control2: CGPoint, x: CGFloat) -> CGFloat {
+    func bezierCurveLength(to: CGPoint, control1: CGPoint, control2: CGPoint, x: CGFloat? = nil) -> CGFloat {
         var dist: CGFloat = 0
         let steps: CGFloat = 100
         
@@ -350,30 +289,25 @@ extension CGPoint {
             
             let a = point(to: to, t: t0, control1: control1, control2: control2)
             let b = point(to: to, t: t1, control1: control1, control2: control2)
-            
-            if a.x >= x {
-                return dist
-            } else if b.x > x {
-                dist += a.line(to: b, x: x)
-                return dist
-            } else if b.x == x {
-                dist += a.line(to: b)
-                return dist
+            if let x = x {
+                if a.x >= x {
+                    return dist
+                } else if b.x > x {
+                    dist += a.lineLength(to: b, x: x)
+                    return dist
+                } else if b.x == x {
+                    dist += a.lineLength(to: b)
+                    return dist
+                }
             }
-            
-            dist += a.line(to: b)
+
+            dist += a.lineLength(to: b)
         }
         
         return dist
     }
 
-	/// <#Description#>
-	/// - Parameters:
-	///   - to: <#to description#>
-	///   - t: <#t description#>
-	///   - control1: <#control1 description#>
-	///   - control2: <#control2 description#>
-	/// - Returns: <#description#>
+
     func point(to: CGPoint, t: CGFloat, control1: CGPoint, control2: CGPoint) -> CGPoint {
         let x = CGPoint.value(x: self.x, y: to.x, t: t, control1: control1.x, control2: control2.x)
         let y = CGPoint.value(x: self.y, y: to.y, t: t, control1: control1.y, control2: control2.x)

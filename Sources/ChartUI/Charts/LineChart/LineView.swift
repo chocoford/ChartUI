@@ -15,10 +15,10 @@ struct LineView: View {
     var globalDataCount: Int
     var curvedLines: Bool = true
     
-    @State private var showIndicator: Bool = false
-    @State private var touchLocation: CGPoint = .zero
-    @State private var showFull: Bool = false
-    @State private var showBackground: Bool = true
+    var touchLocation: CGFloat?
+    
+    @State private var lineShow: Bool = false
+    @State private var backgroundShow: Bool = false
 
     
     /// Step for plotting through data
@@ -33,7 +33,7 @@ struct LineView: View {
         return frame.size.height / CGFloat((lineData.data.compactMap({$0}).max() ?? 0) - (lineData.data.compactMap({$0}).min() ?? 0))
     }
     
-    /// Path of line graph
+    /// Path of line graph, point cannot include in it, otherwise `indicator` will go wrong
     /// - Returns: A path for stroking representing the data, either curved or jagged.
     var path: Path {
         return drawLine(points: lineData.data,
@@ -54,6 +54,11 @@ struct LineView: View {
     }
     
     
+    var poins: Path {
+        return drawPoints(points: lineData.data, step: step, valueRatio: heightRatio)
+    }
+    
+    
 #if os(iOS)
     // see https://stackoverflow.com/a/62370919
     // This lets geometry be recalculated when device rotates. However it doesn't cover issue of app changing
@@ -66,13 +71,12 @@ struct LineView: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack {
-                if self.showFull && self.showBackground {
-                    lineBackgroundView()
-                }
+                self.lineBackgroundView()
                 self.linePathView()
-                if self.showIndicator {
+                if self.touchLocation != nil {
                     IndicatorPoint()
-                        .position(self.getClosestPointOnPath(touchLocation: self.touchLocation))
+                        .position(.init(x: self.touchLocation!,
+                                        y: self.path.yValue(at: touchLocation!)))
                         .rotationEffect(.degrees(180), anchor: .center)
                         .rotation3DEffect(.degrees(180), axis: (x: 0, y: 1, z: 0))
                 }
@@ -89,19 +93,6 @@ struct LineView: View {
                 }
             }
 #endif
-            .gesture(DragGesture()
-                        .onChanged({ value in
-                self.touchLocation = value.location
-                self.showIndicator = true
-                self.getClosestDataPoint(point: self.getClosestPointOnPath(touchLocation: value.location))
-//                self.chartValue.interactionInProgress = true
-            })
-                        .onEnded({ value in
-                self.touchLocation = .zero
-                self.showIndicator = false
-//                self.chartValue.interactionInProgress = false
-            })
-            )
         }
     }
 }
@@ -111,10 +102,10 @@ extension LineView {
     /// Calculate point closest to where the user touched
     /// - Parameter touchLocation: location in view where touched
     /// - Returns: `CGPoint` of data point on chart
-    private func getClosestPointOnPath(touchLocation: CGPoint) -> CGPoint {
-        let closest = self.path.point(to: touchLocation.x)
-        return closest
-    }
+//    private func getClosestPointOnPath(touchLocation: CGFloat)-> CGPoint {
+//        let closest = self.path.yValue(at: touchLocation)
+//        return closest
+//    }
     
     /// Figure out where closest touch point was
     /// - Parameter point: location of data point on graph, near touch location
@@ -134,8 +125,16 @@ extension LineView {
             .fill(lineData.backgroundColor)
             .rotationEffect(.degrees(180), anchor: .center)
             .rotation3DEffect(.degrees(180), axis: (x: 0, y: 1, z: 0))
-            .opacity(0.2)
-            .transition(.opacity.animation(.easeIn(duration: 1.6)))
+            .opacity(backgroundShow ? 1 : 0)
+            .onAppear {
+                withAnimation(.easeOut(duration: 1).delay(0.2 * Double(lineData.data.count))) {
+                    self.backgroundShow = true
+                }
+            }
+            .onDisappear {
+                self.backgroundShow = false
+            }
+//            .transition(.opacity.animation(.easeIn.delay(0.2 * Double(lineData.data.count))))
     }
     
     /// Get the view representing the line stroked in the `foregroundColor`
@@ -144,32 +143,41 @@ extension LineView {
     /// TODO: explain rotations
     /// - Returns: SwiftUI `View`
     private func linePathView() -> some View {
-        self.path
-            .trim(from: 0, to: self.showFull ? 1:0)
-            .stroke(lineData.borderColor, lineWidth: lineData.borderWidth)
-            .rotationEffect(.degrees(180), anchor: .center)
-            .rotation3DEffect(.degrees(180), axis: (x: 0, y: 1, z: 0))
-            .onAppear {
-                withAnimation(.easeOut(duration: 1.2)) {
-                    self.showFull = true
-                }
+        ZStack {
+            self.path
+                .trim(from: 0, to: self.lineShow ? 1:0)
+                .stroke(lineData.borderColor, lineWidth: lineData.borderWidth)
+            
+            self.poins
+                .trim(from: 0, to: self.lineShow ? 1:0)
+                .stroke(lineData.borderColor, lineWidth: lineData.borderWidth)
+        }
+        .rotationEffect(.degrees(180), anchor: .center)
+        .rotation3DEffect(.degrees(180), axis: (x: 0, y: 1, z: 0))
+        .onAppear {
+            withAnimation(.easeOut(duration: 0.2 * Double(lineData.data.count))) {
+                self.lineShow = true
             }
-            .onDisappear {
-                self.showFull = false
-            }
-            .drawingGroup()
+        }
+        .onDisappear {
+            self.lineShow = false
+        }
+        .drawingGroup()
     }
 }
 
 struct LineView_Previews: PreviewProvider {
-    static var data: ChartData = .init()
+    static var data: ChartData = .init(data: [1, 2, 3, 5, 3, 20, 24, 50, 20, 40, 23, 24, 13, 24, 55, 16, 23, 19, 20, 21],
+                                       label: "123",
+                                       backgroundColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.2),
+                                       borderColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.8))
     static var previews: some View {
 //        Group {
-            LineView(lineData: data, globalDataCount: 50)
+            LineView(lineData: data, globalDataCount: 20)
                 .environmentObject(ChartOptions.automatic)
             .onAppear {
                 Task {
-                    let d = (await getAvgVideoTimeByDateAPI()).suffix(50)
+                    let d = (await getAvgVideoTimeByDateAPI()).suffix(20)
                     data = ChartData(data: d.map({Double($0.count)}),
                                      label: "1",
                                      backgroundColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.2),
