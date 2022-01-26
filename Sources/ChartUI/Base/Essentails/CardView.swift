@@ -1,13 +1,11 @@
 import SwiftUI
 
 /// View containing data and some kind of chart content
-public struct CardView<Content: View>: View, ChartBase {
+public struct CardView<Content: View>: View {
     public var chartData = ChartData()
     let content: () -> Content
 
     private var showShadow: Bool
-
-    @EnvironmentObject var style: ChartStyle
 
 	/// Initialize with view options and a nested `ViewBuilder`
 	/// - Parameters:

@@ -1,6 +1,6 @@
 import SwiftUI
 
-public struct LineChart: View {
+public struct LineChart: AnyChart {
     @EnvironmentObject var chartDataset: ChartDataset
     
     @State private var showIndicator: Bool = false
@@ -33,7 +33,6 @@ public struct LineChart: View {
                     .onChange(of: geometry.size.width, perform: { newValue in
                         self.chartContainerWidth = newValue
                     })
-#if os(iOS)
                     .gesture(
                         DragGesture()
                             .onChanged({ value in
@@ -45,7 +44,6 @@ public struct LineChart: View {
                                 }
                             })
                     )
-#endif
                     // TODO: hover
                     .onHover { hover in
                         if !hover {
@@ -123,9 +121,3 @@ struct LineChart_Previews: PreviewProvider {
         }
     }
 }
-
-/// Predefined style, black over white, for preview
-private let blackLineStyle = ChartStyle(backgroundColor: ColorGradient(.white), foregroundColor: ColorGradient(.black))
-
-/// Predefined stylem red over white, for preview
-private let redLineStyle = ChartStyle(backgroundColor: .whiteBlack, foregroundColor: ColorGradient(.red))

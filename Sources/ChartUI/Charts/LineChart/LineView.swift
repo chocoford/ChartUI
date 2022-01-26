@@ -74,7 +74,7 @@ struct LineView: View {
                 self.lineBackgroundView()
                 self.linePathView()
                 if self.touchLocation != nil {
-                    IndicatorPoint()
+                    IndicatorPoint(color: lineData.borderColor)
                         .position(.init(x: self.touchLocation!,
                                         y: self.path.yValue(at: touchLocation!)))
                         .rotationEffect(.degrees(180), anchor: .center)

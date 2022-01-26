@@ -36,11 +36,11 @@ public struct ChartColor<T: ShapeStyle> {
 /// Some predefined colors, used for demos, defaults if color is missing, and data indicator point
 extension ChartColor where T == Color {
     // Orange
-    public static let orangeBright = Color(hexString: "#FF782C")
-    public static let orangeDark = Color(hexString: "#EC2301")
+    public static let orangeBright: ChartColor = .init(color: Color(hexString: "#FF782C"))
+    public static let orangeDark: ChartColor = .init(color: Color(hexString: "#EC2301"))
 
-    public static let legendColor: Color = Color(hexString: "#E8E7EA")
-    public static let indicatorKnob: Color = Color(hexString: "#FF57A6")
+    public static let legendColor: ChartColor = .init(color: Color(hexString: "#E8E7EA"))
+    public static let indicatorKnob: ChartColor = .init(color: Color(hexString: "#FF57A6"))
 }
 
 
