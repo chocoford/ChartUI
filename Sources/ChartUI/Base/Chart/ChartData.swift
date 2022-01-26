@@ -2,6 +2,9 @@ import SwiftUI
 import Combine
 
 public class ChartData: ObservableObject, Equatable, Identifiable {
+    // TODO: extend to `ShapeStyle`
+    public typealias T = Color
+    
     public static func == (lhs: ChartData, rhs: ChartData) -> Bool {
         return lhs.data.map{$0} == rhs.data.map{$0}
     }
@@ -10,26 +13,75 @@ public class ChartData: ObservableObject, Equatable, Identifiable {
     @Published public var label: String
     @Published public var data: [Double?]
     // TODO: support Gradient or even ShapeStyle
-    @Published public var backgroundColor: Color
-    @Published public var borderColor: Color
+    public var backgroundColor: ChartColor<T> {
+        backgroundColors.first ?? .init(color: .clear)
+    }
+    @Published public var backgroundColors: [ChartColor<T>]
+    public var borderColor: ChartColor<T> {
+        borderColors.first ?? .init(color: .clear)
+    }
+    @Published public var borderColors: [ChartColor<T>]
     @Published public var borderWidth: CGFloat
 
-    public init(id: String = UUID().uuidString, data: [Double?], label: String, backgroundColor: Color, borderColor: Color, borderWidth: CGFloat = 1.0) {
+    public init(id: String = UUID().uuidString, data: [Double?], label: String, backgroundColor: T, borderColor: T, borderWidth: CGFloat = 1.0) {
         self.id = id
         self.label = label
         self.data = data
-        self.backgroundColor = backgroundColor
-        self.borderColor = borderColor
+        self.backgroundColors = [.init(color: backgroundColor)]
+        self.borderColors = [.init(color: borderColor)]
         self.borderWidth = borderWidth
     }
 
+    public init(id: String = UUID().uuidString, data: [Double?], label: String, backgroundColors: [T], borderColors: [T], borderWidth: CGFloat = 1.0) {
+        self.id = id
+        self.label = label
+        self.data = data
+        self.backgroundColors = backgroundColors.map({.init(color: $0)})
+        self.borderColors = borderColors.map({.init(color: $0)})
+        self.borderWidth = borderWidth
+    }
+    
+    public init(id: String = UUID().uuidString, data: [Double?], label: String, backgroundColor: ChartColor<Color>, borderColor: ChartColor<Color>, borderWidth: CGFloat = 1.0) {
+        self.id = id
+        self.label = label
+        self.data = data
+        self.backgroundColors = [backgroundColor]
+        self.borderColors = [borderColor]
+        self.borderWidth = borderWidth
+    }
+
+    public init(id: String = UUID().uuidString, data: [Double?], label: String, backgroundColors: [ChartColor<Color>], borderColors: [ChartColor<Color>], borderWidth: CGFloat = 1.0) {
+        self.id = id
+        self.label = label
+        self.data = data
+        self.backgroundColors = backgroundColors
+        self.borderColors = borderColors
+        self.borderWidth = borderWidth
+    }
+    
     public init() {
         self.id = UUID().uuidString
         self.label = ""
         self.data = [Double]()
-        self.backgroundColor = .clear
-        self.borderColor = .clear
+        self.backgroundColors = [.init(color: .clear)]
+        self.borderColors = [.init(color: .clear)]
         self.borderWidth = 1
+    }
+    
+    public func backgroundColor(at index: Int) -> ChartColor<T> {
+        if index >= backgroundColors.count {
+            return backgroundColors.last ?? .init(color: .clear)
+        } else {
+            return backgroundColors[index]
+        }
+    }
+    
+    public func borderColor(at index: Int) -> ChartColor<T> {
+        if index >= borderColors.count {
+            return borderColors.last ?? .init(color: .clear)
+        } else {
+            return borderColors[index]
+        }
     }
 }
 //

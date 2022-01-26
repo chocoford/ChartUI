@@ -6,7 +6,12 @@
 //
 
 import SwiftUI
+import WrappingHStack
 
+enum LabelsIterateWay {
+    case dataset
+    case data
+}
 struct CoordinatesContainerView<Content: View>: View {
     @EnvironmentObject public var options: ChartOptions
     @EnvironmentObject public var dataset: ChartDataset
@@ -15,10 +20,15 @@ struct CoordinatesContainerView<Content: View>: View {
     var geometry: GeometryProxy
     var maxValue: Double
     var yAxesValueNum: Int
-//    var labels: [String]
     var alignToLine: Bool
     
+    var labelsIterateWay: LabelsIterateWay
+    
+    
     var yAxesWidth: CGFloat {
+        if !options.axes.y.showAxes && !options.axes.y.showValue {
+            return 0
+        }
         let baseWidth: CGFloat = 30
         if maxValue <= 100 {
             return baseWidth
@@ -29,9 +39,10 @@ struct CoordinatesContainerView<Content: View>: View {
             maxValueDigit += 1
         }
         
-            return options.axes.y.showValue ? baseWidth + CGFloat(maxValueDigit * 8) : 10
+        return options.axes.y.showValue ? baseWidth + CGFloat(maxValueDigit * 8) : 10
     }
     private let content: Content
+    
     
     // for animation
     @State private var showYValue: Bool = false
@@ -39,35 +50,47 @@ struct CoordinatesContainerView<Content: View>: View {
     init(geometry: GeometryProxy,
          maxValue: Double,
          yAxesValueNum: Int,
-//         labels: [String],
          alignToLine: Bool = true,
+         labelsIterateWay: LabelsIterateWay,
          @ViewBuilder content: () -> Content) {
         self.geometry = geometry
         self.maxValue = maxValue
         self.yAxesValueNum = yAxesValueNum
-//        self.labels = labels
         self.alignToLine = alignToLine
+        self.labelsIterateWay = labelsIterateWay
         self.content = content()
     }
     
     var body: some View {
         VStack {
+            // TODO: redundancy labels alignment
             /// data labels
             HStack {
-                HStack {
+                switch labelsIterateWay {
+                case .dataset:
                     ForEach(Array(dataset.data.enumerated()), id: \.0) { (index, data) in
                         ChartDataLabelView(label: data.label,
-                                           backgroundColor: data.backgroundColor,
-                                           borderColor: data.borderColor,
+                                           backgroundColor: data.backgroundColor.value,
+                                           borderColor: data.borderColor.value,
                                            disabled: .constant(false))
                             .onTapGesture {
                                 
                             }
-
+                    }
+                case .data:
+                    /// only for first dataset's colors.
+                    ForEach(Array(dataset.labels.enumerated()), id: \.0) { (index, label) in
+                        ChartDataLabelView(label: label,
+                                           backgroundColor: dataset.data.first?.backgroundColor(at: index).value ?? .clear,
+                                           borderColor: dataset.data.first?.backgroundColor(at: index).value ?? .clear,
+                                           disabled: .constant(false))
+                            .onTapGesture {
+                                
+                            }
                     }
                 }
-                .frame(height: 20, alignment: .center)
             }
+            .frame(height: 20, alignment: .center)
             
             ZStack {
                 if let xOptions = options.axes.x {
@@ -205,7 +228,7 @@ struct CoordinatesContainerView<Content: View>: View {
             } else {
                 HStack{}.frame(height: options.axesWidth)
             }
-            if dataset.labels.count > 0 {
+            if dataset.labels.count > 0 && options.showValue {
                 let capacity: CGFloat = ceil(minLabelFrameWidth / labelFrameWidth)
                 if alignToLine, let firstLabel = dataset.labels.first {
                     VStack(alignment: .leading) {
@@ -239,7 +262,7 @@ struct CoordinatesContainerView<Content: View>: View {
 struct CoordinatesContainerView_Previews: PreviewProvider {
     @State static var labels: [String] = {
         var result: [String] = []
-        for i in 0..<20 {
+        for i in 0..<12 {
             result.append(String(format: "2021-01-%.2i", i))
         }
         return result
@@ -249,7 +272,8 @@ struct CoordinatesContainerView_Previews: PreviewProvider {
             GeometryReader { geometry in
                 CoordinatesContainerView(geometry: geometry,
                                          maxValue: 35,
-                                         yAxesValueNum: 7) {
+                                         yAxesValueNum: 7,
+                                         labelsIterateWay: .data) {
                     GeometryReader { g in
                         HStack{
                             
@@ -257,8 +281,8 @@ struct CoordinatesContainerView_Previews: PreviewProvider {
                     }
                 }
                                          .environmentObject(ChartOptions(axes: .init(x: .init(showAxes: true),
-                                                                                     y: .automatic),
-                                                                         coordinateLine: .automatic))
+                                                                                     y: .hidden),
+                                                                         coordinateLine: .hidden))
                                          .environmentObject(ChartDataset(labels: labels, data: [ChartData(data: [1, 2], label: "1",
                                                                                                          backgroundColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.2),
                                                                                                          borderColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.8))]))

@@ -1,8 +1,6 @@
 import SwiftUI
 
-/// A single line of data, a view in a `LineChart`
 public struct LineChart: View {
-//    @State private var frame: CGRect = .zero
     @EnvironmentObject var chartDataset: ChartDataset
     
     @State private var showIndicator: Bool = false
@@ -13,7 +11,6 @@ public struct LineChart: View {
     
     @State private var chartContainerWidth: CGFloat? = nil
     @State private var touchedLocationX: CGFloat? = nil
-    @State private var touchedLocationY: CGFloat? = nil
     
     public init(curvedLines: Bool = false) {
         self.curvedLines = curvedLines
@@ -41,16 +38,15 @@ public struct LineChart: View {
                         DragGesture()
                             .onChanged({ value in
                                 self.touchedLocationX = value.location.x
-                                self.touchedLocationY = value.location.y
                             })
                             .onEnded({ value in
                                 withAnimation {
                                     self.touchedLocationX = nil
-                                    self.touchedLocationY = nil
                                 }
                             })
                     )
 #endif
+                    // TODO: hover
                     .onHover { hover in
                         if !hover {
                             withAnimation {

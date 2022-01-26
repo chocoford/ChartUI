@@ -122,7 +122,7 @@ extension LineView {
     /// - Returns: SwiftUI `View`
     private func lineBackgroundView() -> some View {
         return self.closedPath
-            .fill(lineData.backgroundColor)
+            .fill(lineData.backgroundColor.value)
             .rotationEffect(.degrees(180), anchor: .center)
             .rotation3DEffect(.degrees(180), axis: (x: 0, y: 1, z: 0))
             .opacity(backgroundShow ? 1 : 0)
@@ -146,11 +146,11 @@ extension LineView {
         ZStack {
             self.path
                 .trim(from: 0, to: self.lineShow ? 1:0)
-                .stroke(lineData.borderColor, lineWidth: lineData.borderWidth)
+                .stroke(lineData.borderColor.value, lineWidth: lineData.borderWidth)
             
             self.poins
                 .trim(from: 0, to: self.lineShow ? 1:0)
-                .stroke(lineData.borderColor, lineWidth: lineData.borderWidth)
+                .stroke(lineData.borderColor.value, lineWidth: lineData.borderWidth)
         }
         .rotationEffect(.degrees(180), anchor: .center)
         .rotation3DEffect(.degrees(180), axis: (x: 0, y: 1, z: 0))

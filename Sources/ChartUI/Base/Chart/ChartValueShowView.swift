@@ -14,10 +14,12 @@ struct ChartValueShowView: View {
     var chartGeometry: GeometryProxy
     
     var dataIndex: Int
+    var datasetRange: Range<Int>?
     
-    init(geometry: GeometryProxy, dataIndex index: Int) {
+    init(geometry: GeometryProxy, dataIndex index: Int, datasetRange: Range<Int>? = nil) {
         self.chartGeometry = geometry
         self.dataIndex = index
+        self.datasetRange = datasetRange
     }
     
     var body: some View {
@@ -25,10 +27,10 @@ struct ChartValueShowView: View {
             Text(dataset.labels[dataIndex])
                 .font(.title)
                 .bold()
-            ForEach(dataset.data) { dataset in
+            ForEach(dataset.data[datasetRange ?? 0..<dataset.data.count]) { dataset in
                 HStack(spacing: 4) {
-                    RoundedRectangle(cornerRadius: 4).fill(dataset.backgroundColor)
-                        .overlay(RoundedRectangle(cornerRadius: 4).stroke(dataset.borderColor))
+                    RoundedRectangle(cornerRadius: 4).fill(dataset.backgroundColor.value)
+                        .overlay(RoundedRectangle(cornerRadius: 4).stroke(dataset.borderColor.value))
                         .frame(width: 10, height: 10, alignment: .center)
                     Text("\(dataset.label) : \((dataset.data[dataIndex] ?? 0).description)")
                         .font(.body)
@@ -50,7 +52,7 @@ struct ChartValueShowView_Previews: PreviewProvider {
     static var previews: some View {
         GeometryReader { geometry in
             ChartValueShowView(geometry: geometry, dataIndex: 0)
-                .environmentObject(ChartDataset(labels: ["labels", "123"], data: [ChartData(data: [1, 2], label: "1",
+                .environmentObject(ChartDataset(labels: ["labelslabelslabelslabelslabels", "123"], data: [ChartData(data: [1, 2], label: "1",
                                                                                 backgroundColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.2),
                                                                                 borderColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.8))]))
         }

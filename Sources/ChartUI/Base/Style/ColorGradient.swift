@@ -40,7 +40,7 @@ extension ColorGradient {
 }
 
 extension ColorGradient {
-    public static let orangeBright = ColorGradient(ChartColors.orangeBright)
+    public static let orangeBright = ColorGradient(ChartColor.orangeBright)
     public static let redBlack = ColorGradient(.red, .black)
     public static let greenRed = ColorGradient(.green, .red)
     public static let whiteBlack = ColorGradient(.white, .black)

@@ -38,8 +38,8 @@ public struct BarChart: View {
                                         ZStack(alignment: .bottom) {
                                             BarChartCell(value: normalizedValue,
                                                          index: dataIndex,
-                                                         backgroundColor: dataset.backgroundColor,
-                                                         borderColor: dataset.borderColor,
+                                                         backgroundColor: dataset.backgroundColor.value,
+                                                         borderColor: dataset.borderColor.value,
                                                          borderWdith: dataset.borderWidth,
                                                          //                                                     touchLocation: -1,
                                                          showDelay: Double(datasetIndex) * 0.2)
