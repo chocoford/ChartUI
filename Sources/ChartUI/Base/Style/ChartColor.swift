@@ -1,15 +1,25 @@
 import SwiftUI
-#if canImport(UIKit)
-import UIKit
-#elseif canImport(AppKit)
-import AppKit
-#endif
+//#if canImport(UIKit)
+//import UIKit
+//#elseif canImport(AppKit)
+//import AppKit
+//#endif
 
 public struct ChartColor<T: ShapeStyle> {
     var value: T
     
     init(color: T) where T == Color {
         self.value = color
+    }
+    
+    @available(*, unavailable)
+    init(linearGradient gradient: T) where T == LinearGradient {
+        self.value = gradient
+    }
+    
+    @available(*, unavailable)
+    init(radialGradient gradient: T) where T == RadialGradient {
+        self.value = gradient
     }
     
     static func generateColors(with color: T, count: Int, opacity: Double = 1.0) -> [T] where T == Color {
