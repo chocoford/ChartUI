@@ -15,6 +15,7 @@ struct ChartContainerView<Content: View>: View {
     private let chartView: (_ geometry: GeometryProxy, _ maxValue: CGFloat) -> Content
     
     var alignToValue: Bool
+    var lebelsIterateWay: LabelsIterateWay
     
     var gap: Double {
         guard let max = chartDataset.data.flatMap({$0.data}).map({$0 ?? 0}).max() else {
@@ -45,8 +46,10 @@ struct ChartContainerView<Content: View>: View {
     }
 
     public init (alignToValue: Bool = false,
+                 lebelsIterateWay: LabelsIterateWay = .dataset,
         @ViewBuilder chartView: @escaping (_ geometry: GeometryProxy, _ maxValue: CGFloat) -> Content) {
         self.alignToValue = alignToValue
+        self.lebelsIterateWay = lebelsIterateWay
         self.chartView = chartView
     }
     
@@ -57,7 +60,8 @@ struct ChartContainerView<Content: View>: View {
                 CoordinatesContainerView(geometry: geometry,
                                          maxValue: maxValue,
                                          yAxesValueNum: coordinateLineNum,
-                                         alignToLine: alignToValue) {
+                                         alignToLine: alignToValue,
+                                         labelsIterateWay: self.lebelsIterateWay) {
                     ZStack {
                         // MARK: Coordinate Line
                         if options.coordinateLine != nil {
@@ -71,20 +75,6 @@ struct ChartContainerView<Content: View>: View {
             }
             .padding(.top, 6)
             .environmentObject(chartDataset)
-//            if chartData.values.count == 0 {
-//                GeometryReader { geometry in
-//                    HStack {
-//                        Spacer()
-//                        VStack {
-//                            Spacer()
-//                            LoadingView()
-//                            Spacer()
-//                        }
-//                        Spacer()
-//                    }
-//                }.background(Color(.sRGB, red: 0.2, green: 0.2, blue: 0.2, opacity: 0.8))
-//            }
-//        }
     }
 }
 

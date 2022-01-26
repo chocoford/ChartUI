@@ -25,7 +25,7 @@ struct ChartDataLabelView: View {
                     .frame(width: 50, alignment: .center)
                 Text(label)
                     .if(disabled, transform: { $0.strikethrough() })
-                        .layoutPriority(1)
+                        
             }
             .onTapGesture {
                 withAnimation {
@@ -33,6 +33,7 @@ struct ChartDataLabelView: View {
                 }
             }
         }
+        .layoutPriority(1)
     }
 }
 
