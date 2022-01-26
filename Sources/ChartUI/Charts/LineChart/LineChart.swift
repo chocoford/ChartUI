@@ -24,6 +24,7 @@ public struct LineChart: AnyChart {
                         ForEach(chartDataset.data) { data in
                             renderLineView(data)
                         }
+                        Text(touchedLocationX?.description ?? "")
                     }
                     
                     // FIXME: pass width to value show view. But it is ugly
@@ -98,9 +99,9 @@ struct LineChart_Previews: PreviewProvider {
                     .environmentObject(data)
                     .onAppear {
                         Task {
-                            let data = (await getAvgVideoTimeByDateAPI()).suffix(20)
+                            let data = (await getAvgVideoTimeByDateAPI()).suffix(7)
                             self.data.labels = data.map({$0._id})
-                            self.data.data = [ChartData(data: data.map({Double($0.count)}), label: "1",
+                            self.data.data = [ChartData(data: data.map({Double($0.count) * -1}), label: "1",
                                                         backgroundColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.2),
                                                         borderColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.8))]
                         }

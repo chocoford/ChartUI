@@ -26,7 +26,15 @@ extension Path {
 	/// - Returns: a `CGPoint` representing the location of that section of the path
     func point(for percent: CGFloat) -> CGPoint {
         let path = trimmedPath(for: percent)
-        return CGPoint(x: path.boundingRect.midX, y: path.boundingRect.midY)
+        let rect = path.boundingRect
+        return rect.mid //.init(x: rect.origin.x + rect.width, y: rect.origin.y + rect.height)
+    }
+    
+    func pe(at x: CGFloat) -> CGFloat {
+        let total: CGFloat = length
+        let sub: CGFloat = length(to: x)
+        let percent: CGFloat = sub / total
+        return percent
     }
 
     func yValue(at x: CGFloat) -> CGFloat {

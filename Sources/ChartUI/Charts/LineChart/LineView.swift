@@ -15,7 +15,7 @@ struct LineView: View {
     var globalDataCount: Int
     var curvedLines: Bool = true
     
-    var touchLocation: CGFloat?
+    var touchLocation: CGFloat? = 130
     
     @State private var lineShow: Bool = false
     @State private var backgroundShow: Bool = false
@@ -36,7 +36,7 @@ struct LineView: View {
     /// Path of line graph, point cannot include in it, otherwise `indicator` will go wrong
     /// - Returns: A path for stroking representing the data, either curved or jagged.
     var path: Path {
-        return drawLine(points: lineData.data,
+        return drawLine(values: lineData.data,
                         step: step,
                         valueRatio: heightRatio,
                         smooth: curvedLines,
@@ -46,7 +46,7 @@ struct LineView: View {
     /// Path of linegraph, but also closed at the bottom side
     /// - Returns: A path for filling representing the data, either curved or jagged
     var closedPath: Path {
-        return drawLine(points: lineData.data,
+        return drawLine(values: lineData.data,
                         step: step,
                         valueRatio: heightRatio,
                         smooth: curvedLines,
@@ -75,8 +75,11 @@ struct LineView: View {
                 self.linePathView()
                 if self.touchLocation != nil {
                     IndicatorPoint(color: lineData.borderColor)
-                        .position(.init(x: self.touchLocation!,
-                                        y: self.path.yValue(at: touchLocation!)))
+                        .border(.yellow)
+                        .position(self.path.point(at: touchLocation!)) // <-- strange
+                    // FIXME: self.path.point(at: touchLocation!).x != self.touchLocation!
+//                        .position(.init(x: self.touchLocation!,
+//                                        y: self.path.yValue(at: touchLocation!)))
                         .rotationEffect(.degrees(180), anchor: .center)
                         .rotation3DEffect(.degrees(180), axis: (x: 0, y: 1, z: 0))
                 }
@@ -145,9 +148,28 @@ extension LineView {
     private func linePathView() -> some View {
         ZStack {
             self.path
+//                .trimmedPath(for: 0.139)
                 .trim(from: 0, to: self.lineShow ? 1:0)
                 .stroke(lineData.borderColor.value, lineWidth: lineData.borderWidth)
-            
+//            let p = self.path
+//                .trimmedPath(for: 0.139)
+//            Rectangle()
+//                .stroke(.green.opacity(0.5))
+//                .frame(width: p.boundingRect.width, height: p.boundingRect.height, alignment: .center)
+//                .position(x: p.boundingRect.origin.x + p.boundingRect.width / 2,
+//                          y: p.boundingRect.origin.y + p.boundingRect.height / 2)
+//
+//            Rectangle()
+//                .stroke(.blue.opacity(0.5))
+//                .frame(width: p.boundingRect.width, height: p.boundingRect.height, alignment: .center)
+//                .position(x: touchLocation!,
+//                          y: self.path.yValue(at: touchLocation!))
+//
+//            Text(self.path.pe(at: touchLocation!).description)
+//                .position(x: p.boundingRect.origin.x + p.boundingRect.width / 2,
+//                          y: p.boundingRect.origin.y + p.boundingRect.height / 2)
+//                .rotationEffect(.degrees(180), anchor: .center)
+//                .rotation3DEffect(.degrees(180), axis: (x: 0, y: 1, z: 0))
             self.poins
                 .trim(from: 0, to: self.lineShow ? 1:0)
                 .stroke(lineData.borderColor.value, lineWidth: lineData.borderWidth)
@@ -177,7 +199,7 @@ struct LineView_Previews: PreviewProvider {
                 .environmentObject(ChartOptions.automatic)
             .onAppear {
                 Task {
-                    let d = (await getAvgVideoTimeByDateAPI()).suffix(20)
+                    let d = (await getAvgVideoTimeByDateAPI()).suffix(7)
                     data = ChartData(data: d.map({Double($0.count)}),
                                      label: "1",
                                      backgroundColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.2),

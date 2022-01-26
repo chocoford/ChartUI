@@ -8,21 +8,29 @@
 import Foundation
 import SwiftUI
 
-func drawLine(points: [Double?],
+/// Draw Line with points defined by `values` and `step`.
+/// - Parameters:
+///   - values: the value of all points.
+///   - step: the spacing between points.
+///   - valueRatio: a ratio that multiply all `values`, like scale, default to 1.
+///   - smooth: indicate that the line should be smooth or straight.
+///   - close: indicate that line should be closed by `closeSubpath`.
+/// - Returns: a `Path` through all points.
+func drawLine(values: [Double?],
               step: CGFloat,
               valueRatio: CGFloat = 1,
-              drawPoint: Bool = true,
+//              drawPoint: Bool = true,
               smooth: Bool = false,
               close: Bool = false) -> Path {
     var path = Path()
-    guard points.count > 1, let offset = points.compactMap({$0}).min() else {
+    guard values.count > 1, let offset = values.compactMap({$0}).min() else {
         return path
     }
     
     var newLineFlag = true
     var prePoint: CGPoint = .zero
     
-    for (index, value) in points.enumerated() {
+    for (index, value) in values.enumerated() {
         if let value = value {
             let point = CGPoint(x: step * CGFloat(index), y: CGFloat(value - offset) * valueRatio)
             
