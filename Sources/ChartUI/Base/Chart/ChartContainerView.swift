@@ -12,6 +12,7 @@ struct ChartContainerView<Content: View>: View {
     @EnvironmentObject var chartDataset: ChartDataset
     @EnvironmentObject var options: ChartOptions
     
+    /// <#Description#>
     private let chartView: (_ geometry: GeometryProxy, _ maxValue: CGFloat, _ minValue: CGFloat) -> Content
     
     var alignToValue: Bool
@@ -95,9 +96,8 @@ struct ChartContainerView<Content: View>: View {
     var body: some View {
         let coordinateLineNum: Int = Int((abs(maxValue) + abs(minValue)) / gap)
         
-        GeometryReader { geometry in
-            CoordinatesContainerView(geometry: geometry,
-                                     maxValue: maxValue,
+        
+            CoordinatesContainerView(maxValue: maxValue,
                                      minValue: minValue,
                                      yAxesValueNum: coordinateLineNum,
                                      alignToLine: alignToValue,
@@ -108,10 +108,10 @@ struct ChartContainerView<Content: View>: View {
                         CoordinatesLineView(coordinateLineNumber: coordinateLineNum, alignToLabel: alignToValue)
                     }
                     if chartDataset.data.count > 0 && chartDataset.data.first?.data.count ?? 0 > 0 {
-                        chartView(geometry, maxValue, minValue)
+                        GeometryReader { geometry in
+                            chartView(geometry, maxValue, minValue)
+                        }
                     }
-//                    Text(gap.description)
-                }
             }
         }
         .padding(.top, 6)

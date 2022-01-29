@@ -17,7 +17,7 @@ struct CoordinatesContainerView<Content: View>: View {
     @EnvironmentObject public var dataset: ChartDataset
     
     // every time these propertis changed, view should redrawn.
-    var geometry: GeometryProxy
+//    @State private var geometry: GeometryProxy? = nil
     var maxValue: Double
     var minValue: Double
     var yAxesValueNum: Int
@@ -50,14 +50,14 @@ struct CoordinatesContainerView<Content: View>: View {
     // for animation
     @State private var showYValue: Bool = false
     
-    init(geometry: GeometryProxy,
+    init(//geometry: GeometryProxy,
          maxValue: Double,
          minValue: Double,
          yAxesValueNum: Int,
          alignToLine: Bool = true,
          labelsIterateWay: LabelsIterateWay,
          @ViewBuilder content: () -> Content) {
-        self.geometry = geometry
+//        self.geometry = geometry
         self.maxValue = maxValue
         self.minValue = minValue
         self.yAxesValueNum = yAxesValueNum
@@ -67,61 +67,68 @@ struct CoordinatesContainerView<Content: View>: View {
     }
     
     var body: some View {
-        VStack {
-            // TODO: redundancy labels alignment
-            /// data labels
-            GeometryReader { labelsGeometry in
-                HStack {
-                    switch labelsIterateWay {
-                    case .dataset:
-                        ForEach(Array(dataset.data.enumerated()), id: \.0) { (index, data) in
-                            ChartDataLabelView(label: data.label,
-                                               backgroundColor: data.backgroundColor.value,
-                                               borderColor: data.borderColor.value,
-                                               disabled: .constant(false))
-                                .onTapGesture {
-                                    
-                                }
-                        }
-                    case .data:
-                        /// only for first dataset's colors.
-                        ForEach(Array(dataset.labels.enumerated()), id: \.0) { (index, label) in
-                            ChartDataLabelView(label: label,
-                                               backgroundColor: dataset.data.first?.backgroundColor(at: index).value ?? .clear,
-                                               borderColor: dataset.data.first?.backgroundColor(at: index).value ?? .clear,
-                                               disabled: .constant(false))
-                                .onTapGesture {
-                                    
-                                }
+        GeometryReader { geometry in
+            VStack {
+                // TODO: redundancy labels alignment
+                /// data labels
+                GeometryReader { labelsGeometry in
+                    HStack {
+                        switch labelsIterateWay {
+                        case .dataset:
+                            ForEach(Array(dataset.data.enumerated()), id: \.0) { (index, data) in
+                                ChartDataLabelView(label: data.label,
+                                                   backgroundColor: data.backgroundColor.value,
+                                                   borderColor: data.borderColor.value,
+                                                   disabled: .constant(false))
+                                    .onTapGesture {
+                                        
+                                    }
+                            }
+                        case .data:
+                            /// only for first dataset's colors.
+                            ForEach(Array(dataset.labels.enumerated()), id: \.0) { (index, label) in
+                                ChartDataLabelView(label: label,
+                                                   backgroundColor: dataset.data.first?.backgroundColor(at: index).value ?? .clear,
+                                                   borderColor: dataset.data.first?.backgroundColor(at: index).value ?? .clear,
+                                                   disabled: .constant(false))
+                                    .onTapGesture {
+                                        
+                                    }
+                            }
                         }
                     }
-                }
-            }.frame(height: 20, alignment: .center)
-            
-            ZStack {
-                if let xOptions = options.axes.x {
-                    VStack(spacing: 0) {
-                        if let yOptions = options.axes.y {
-                            HStack(spacing: 0) {
-                                yAxesView(yOptions)
+                }.frame(height: 20, alignment: .center)
+                
+                ZStack {
+                    if let xOptions = options.axes.x {
+                        VStack(spacing: 0) {
+                            if let yOptions = options.axes.y {
+                                HStack(spacing: 0) {
+                                    yAxesView(yOptions)
+                                    content
+                                }
+                            } else {
                                 content
                             }
-                        } else {
+                            xAxesView(xOptions, in: geometry)
+                        }
+                    } else if let yOptions = options.axes.y {
+                        HStack(spacing: 0) {
+                            yAxesView(yOptions)
                             content
                         }
-                        xAxesView(xOptions)
-                    }
-                } else if let yOptions = options.axes.y {
-                    HStack(spacing: 0) {
-                        yAxesView(yOptions)
+                    } else {
                         content
                     }
-                } else {
-                    content
-                }
-            }//.layoutPriority(1)
+                }//.layoutPriority(1)
+            }
+//            .onAppear {
+//                self.geometry = geometry
+//            }
+//            .onChange(of: geometry.frame(in: .global)) { val in
+//                self.geometry = geometry
+//            }
         }
-        
 //        .onAppear {
 //            self.show = true
 //        }
@@ -187,7 +194,7 @@ struct CoordinatesContainerView<Content: View>: View {
     }
     
     
-    func xAxesView(_ options: ChartOptions.AxesOptions.Options) -> some View {
+    func xAxesView(_ options: ChartOptions.AxesOptions.Options, in geometry: GeometryProxy) -> some View {
         let axesLength: CGFloat = geometry.size.width - yAxesWidth
         let actualLabelLength: CGFloat = CGFloat(dataset.labels.map({$0.count}).max() ?? 0) * 8
         let labelFrameWidth: CGFloat = axesLength / CGFloat(alignToLine ? dataset.labels.count - 1 : dataset.labels.count)
@@ -278,7 +285,7 @@ struct CoordinatesContainerView_Previews: PreviewProvider {
     static var previews: some View {
         VStack {
             GeometryReader { geometry in
-                CoordinatesContainerView(geometry: geometry,
+                CoordinatesContainerView(//geometry: geometry,
                                          maxValue: 35,
                                          minValue: -100,
                                          yAxesValueNum: 10,
