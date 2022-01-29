@@ -54,6 +54,7 @@ public class ChartOptions: ObservableObject, Equatable {
             public static var hidden = Options(showValue: false, showAxes: false, axesWidth: 0.5, axesColor: .primary)
             
             // value
+            @Published public var startAtZero: Bool
             @Published public var max: Double?
             @Published public var min: Double?
             @Published public var showValue: Bool
@@ -66,7 +67,11 @@ public class ChartOptions: ObservableObject, Equatable {
             @Published public var axesWidth: CGFloat
             @Published public var axesColor: Color
             
-            public init(max: Double? = nil, min: Double? = nil, showValue: Bool = true, valuePadding: CGFloat = 6, showAxes: Bool = true, axesWidth: CGFloat = 0.5, axesColor: Color = .primary) {
+            public init(startAtZero: Bool = true,
+                        max: Double? = nil, min: Double? = nil,
+                        showValue: Bool = true, valuePadding: CGFloat = 6,
+                        showAxes: Bool = true, axesWidth: CGFloat = 0.5, axesColor: Color = .primary) {
+                self.startAtZero = startAtZero
                 self.max = max
                 self.min = min
                 self.showValue = showValue
