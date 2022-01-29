@@ -25,6 +25,7 @@ public struct BarChart: AnyChart {
         GeometryReader { chartGeometry in
             ZStack(alignment: .top) {
                 ChartContainerView { geometry, maxValue, minValue in
+                    let span: Double = (maxValue - minValue)
                     let spacing: CGFloat = (geometry.size.width) / CGFloat(chartDataset.labels.count * 3)
                     HStack(alignment: .bottom, spacing: spacing) {
                         ForEach(Array(chartDataset.labels.enumerated()), id: \.0) { (dataIndex, _) in
@@ -34,15 +35,17 @@ public struct BarChart: AnyChart {
                                     /// leave those `nodata` alone
                                     if dataIndex < dataset.data.count {
                                         let dataValue = dataset.data[dataIndex] ?? 0.0
-                                        let normalizedValue: Double = dataValue / Double(maxValue)
+                                        let normalizedValue: Double = dataValue / span
                                         ZStack(alignment: .bottom) {
-                                            BarChartCell(value: normalizedValue,
+                                            BarChartCell(value: abs(normalizedValue),
                                                          index: dataIndex,
                                                          backgroundColor: dataset.backgroundColor.value,
                                                          borderColor: dataset.borderColor.value,
                                                          borderWdith: dataset.borderWidth,
-                                                         //                                                     touchLocation: -1,
                                                          showDelay: Double(datasetIndex) * 0.2)
+                                                .rotationEffect(.init(degrees: normalizedValue.sign == .minus ? 180 : 0),
+                                                                anchor: .bottom)
+                                                .offset(x: 0, y: minValue / span * geometry.size.height)
                                                 .opacity(self.touchedBarsGroupIndex == nil ? 1 : self.touchedBarsGroupIndex == dataIndex ? 1 : 0.6)
 //                                                .animation(.default, value: self.touchedBarsGroupIndex)
                                             // TODO: 不是很完美的解决方案
@@ -95,6 +98,7 @@ public struct BarChart: AnyChart {
                             
                         }
                     }
+                    
                 }
                 /// Value Indicator
                 if let index = touchedBarsGroupIndex {
@@ -139,9 +143,9 @@ struct Barchart_Previews: PreviewProvider {
                     .environmentObject(options)
                     .onAppear {
                         Task {
-                            let data = (await getAvgVideoTimeByDateAPI()).suffix(50)
+                            let data = (await getAvgVideoTimeByDateAPI()).suffix(10)
                             self.data.labels = data.map({$0._id})
-                            self.data.data = [ChartData(data: data.map({Double($0.count)}), label: "1",
+                            self.data.data = [ChartData(data: data.map({Double($0.count) - 40000}), label: "1",
                                                         backgroundColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.2),
                                                         borderColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.8))]
                         }
