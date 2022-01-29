@@ -19,6 +19,7 @@ struct CoordinatesContainerView<Content: View>: View {
     // every time these propertis changed, view should redrawn.
     var geometry: GeometryProxy
     var maxValue: Double
+    var minValue: Double
     var yAxesValueNum: Int
     var alignToLine: Bool
     
@@ -29,11 +30,13 @@ struct CoordinatesContainerView<Content: View>: View {
         if !options.axes.y.showAxes && !options.axes.y.showValue {
             return 0
         }
+        let absMax: Double = [abs(maxValue), abs(minValue)].max()!
+        
         let baseWidth: CGFloat = 30
-        if maxValue <= 100 {
+        if absMax <= 100 {
             return baseWidth
         }
-        var maxValueDigit = 0, mv = maxValue
+        var maxValueDigit = 0, mv = absMax
         while mv > 100 {
             mv /= 10
             maxValueDigit += 1
@@ -49,12 +52,14 @@ struct CoordinatesContainerView<Content: View>: View {
     
     init(geometry: GeometryProxy,
          maxValue: Double,
+         minValue: Double,
          yAxesValueNum: Int,
          alignToLine: Bool = true,
          labelsIterateWay: LabelsIterateWay,
          @ViewBuilder content: () -> Content) {
         self.geometry = geometry
         self.maxValue = maxValue
+        self.minValue = minValue
         self.yAxesValueNum = yAxesValueNum
         self.alignToLine = alignToLine
         self.labelsIterateWay = labelsIterateWay
@@ -65,32 +70,33 @@ struct CoordinatesContainerView<Content: View>: View {
         VStack {
             // TODO: redundancy labels alignment
             /// data labels
-            HStack {
-                switch labelsIterateWay {
-                case .dataset:
-                    ForEach(Array(dataset.data.enumerated()), id: \.0) { (index, data) in
-                        ChartDataLabelView(label: data.label,
-                                           backgroundColor: data.backgroundColor.value,
-                                           borderColor: data.borderColor.value,
-                                           disabled: .constant(false))
-                            .onTapGesture {
-                                
-                            }
-                    }
-                case .data:
-                    /// only for first dataset's colors.
-                    ForEach(Array(dataset.labels.enumerated()), id: \.0) { (index, label) in
-                        ChartDataLabelView(label: label,
-                                           backgroundColor: dataset.data.first?.backgroundColor(at: index).value ?? .clear,
-                                           borderColor: dataset.data.first?.backgroundColor(at: index).value ?? .clear,
-                                           disabled: .constant(false))
-                            .onTapGesture {
-                                
-                            }
+            GeometryReader { labelsGeometry in
+                HStack {
+                    switch labelsIterateWay {
+                    case .dataset:
+                        ForEach(Array(dataset.data.enumerated()), id: \.0) { (index, data) in
+                            ChartDataLabelView(label: data.label,
+                                               backgroundColor: data.backgroundColor.value,
+                                               borderColor: data.borderColor.value,
+                                               disabled: .constant(false))
+                                .onTapGesture {
+                                    
+                                }
+                        }
+                    case .data:
+                        /// only for first dataset's colors.
+                        ForEach(Array(dataset.labels.enumerated()), id: \.0) { (index, label) in
+                            ChartDataLabelView(label: label,
+                                               backgroundColor: dataset.data.first?.backgroundColor(at: index).value ?? .clear,
+                                               borderColor: dataset.data.first?.backgroundColor(at: index).value ?? .clear,
+                                               disabled: .constant(false))
+                                .onTapGesture {
+                                    
+                                }
+                        }
                     }
                 }
-            }
-            .frame(height: 20, alignment: .center)
+            }.frame(height: 20, alignment: .center)
             
             ZStack {
                 if let xOptions = options.axes.x {
@@ -113,7 +119,7 @@ struct CoordinatesContainerView<Content: View>: View {
                 } else {
                     content
                 }
-            }
+            }//.layoutPriority(1)
         }
         
 //        .onAppear {
@@ -125,14 +131,16 @@ struct CoordinatesContainerView<Content: View>: View {
     }
     func yAxesView(_ options: ChartOptions.AxesOptions.Options) -> some View {
         GeometryReader { yGeometry in
+            let span: Double = maxValue - minValue
+            let absMax: Double = [abs(maxValue), abs(minValue)].max()!
             if options.showValue {
                 ZStack(alignment: .trailing) {
                     VStack(alignment: .trailing, spacing: 0) {
                         let num = self.options.coordinateLine?.y.number ?? yAxesValueNum
                         /// must has `id` here.
                         ForEach(0..<num, id: \.self) { i in
-                            let value: Double = maxValue / Double(num) * Double(num - i)
-                            Text(maxValue > 1 ? String(Int(value)) : String(format: "%.1f", value))
+                            let value: Double = minValue + span / Double(num) * Double(num - i)
+                            Text(absMax > 1 ? String(Int(value)) : String(format: "%.1f", value))
                                 .offset(x: 0, y: -7)
                                 .frame(height: yGeometry.size.height / CGFloat(num), alignment: .top)
                                 .animation(.easeInOut(duration: 0.2), value: maxValue)
@@ -142,7 +150,7 @@ struct CoordinatesContainerView<Content: View>: View {
                     VStack(alignment: .trailing){
                         Spacer()
                         HStack() {
-                            Text("0").offset(x: 0, y: 7)
+                            Text(absMax > 1 ? String(Int(minValue)) : String(format: "%.1f", minValue)).offset(x: 0, y: 7)
                         }
                     }
                 }
@@ -262,7 +270,7 @@ struct CoordinatesContainerView<Content: View>: View {
 struct CoordinatesContainerView_Previews: PreviewProvider {
     @State static var labels: [String] = {
         var result: [String] = []
-        for i in 0..<12 {
+        for i in 0..<22 {
             result.append(String(format: "2021-01-%.2i", i))
         }
         return result
@@ -272,7 +280,8 @@ struct CoordinatesContainerView_Previews: PreviewProvider {
             GeometryReader { geometry in
                 CoordinatesContainerView(geometry: geometry,
                                          maxValue: 35,
-                                         yAxesValueNum: 7,
+                                         minValue: -100,
+                                         yAxesValueNum: 10,
                                          labelsIterateWay: .data) {
                     GeometryReader { g in
                         HStack{
@@ -281,15 +290,19 @@ struct CoordinatesContainerView_Previews: PreviewProvider {
                     }
                 }
                                          .environmentObject(ChartOptions(axes: .init(x: .init(showAxes: true),
-                                                                                     y: .hidden),
+                                                                                     y: .automatic),
                                                                          coordinateLine: .hidden))
-                                         .environmentObject(ChartDataset(labels: labels, data: [ChartData(data: [1, 2], label: "1",
-                                                                                                         backgroundColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.2),
-                                                                                                         borderColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.8))]))
-//                                         .onAppear {
-//                                             Task {
-//                                                 let data = (await getAvgVideoTimeByDateAPI()).prefix(50)
-//                                                 labels = data.map({$0._id})
+                                         .environmentObject(ChartDataset(labels: labels,
+                                                                         data: [
+                                                                            ChartData(data: [1, 2],
+                                                                                      label: "1",
+                                                                                      backgroundColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.2),
+                                                                                      borderColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.8))
+                                                                         ]))
+                //                                         .onAppear {
+                //                                             Task {
+                //                                                 let data = (await getAvgVideoTimeByDateAPI()).prefix(50)
+                //                                                 labels = data.map({$0._id})
 //                                             }
 //                                         }
             }
@@ -300,5 +313,6 @@ struct CoordinatesContainerView_Previews: PreviewProvider {
             }
         }
         .frame(width: nil, height: 700, alignment: .center)
+        .padding()
     }
 }

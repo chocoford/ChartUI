@@ -25,7 +25,7 @@ public struct PieChart: AnyChart {
     public var body: some View {
         GeometryReader { chartGeometry in
             ZStack(alignment: .top) {
-                ChartContainerView(lebelsIterateWay: .data) { geometry, maxValue in
+                ChartContainerView(lebelsIterateWay: .data) { geometry, maxValue, minValue in
                     ZStack {
                         if dataset.data.count > 0 {
                             ForEach(Array(dataset.labels.enumerated()), id:\.0) { index, _ in

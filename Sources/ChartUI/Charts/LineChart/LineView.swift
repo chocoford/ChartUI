@@ -11,16 +11,18 @@ import SwiftUI
 struct LineView: View {
     @State private var frame: CGRect = .zero
     var lineData: ChartData
+    var maxValue: Double
+    var minValue: Double
     /// The count of the largest data of all data's
     var globalDataCount: Int
     var curvedLines: Bool = true
     
-    var touchLocation: CGFloat? = 130
+    var touchLocation: CGFloat?
     
     @State private var lineShow: Bool = false
     @State private var backgroundShow: Bool = false
 
-    
+
     /// Step for plotting through data
     /// For drawing quad curved path.
     /// - Returns: X and Y delta between each data point based on data and view's frame
@@ -30,7 +32,23 @@ struct LineView: View {
     }
     
     var heightRatio: CGFloat {
-        return frame.size.height / CGFloat((lineData.data.compactMap({$0}).max() ?? 0) - (lineData.data.compactMap({$0}).min() ?? 0))
+//        let max: Double = lineData.data.compactMap({$0}).max() ?? 0
+
+        return frame.size.height / CGFloat((maxValue - minValue))
+    }
+    
+    var zeroPosition: CGFloat {
+
+        
+        if maxValue.sign == minValue.sign {
+            if maxValue > 0 {
+                return 0
+            } else {
+                return frame.size.height
+            }
+        } else {
+            return minValue / (minValue - maxValue) * frame.size.height
+        }
     }
     
     /// Path of line graph, point cannot include in it, otherwise `indicator` will go wrong
@@ -39,6 +57,7 @@ struct LineView: View {
         return drawLine(values: lineData.data,
                         step: step,
                         valueRatio: heightRatio,
+                        minValue: minValue,
                         smooth: curvedLines,
                         close: false)
     }
@@ -49,13 +68,15 @@ struct LineView: View {
         return drawLine(values: lineData.data,
                         step: step,
                         valueRatio: heightRatio,
+                        minValue: minValue,
                         smooth: curvedLines,
-                        close: true)
+                        close: true,
+                        closeAt: zeroPosition)
     }
     
     
     var poins: Path {
-        return drawPoints(points: lineData.data, step: step, valueRatio: heightRatio)
+        return drawPoints(points: lineData.data, step: step, valueRatio: heightRatio, minValue: minValue)
     }
     
     
@@ -148,28 +169,8 @@ extension LineView {
     private func linePathView() -> some View {
         ZStack {
             self.path
-//                .trimmedPath(for: 0.139)
                 .trim(from: 0, to: self.lineShow ? 1:0)
                 .stroke(lineData.borderColor.value, lineWidth: lineData.borderWidth)
-//            let p = self.path
-//                .trimmedPath(for: 0.139)
-//            Rectangle()
-//                .stroke(.green.opacity(0.5))
-//                .frame(width: p.boundingRect.width, height: p.boundingRect.height, alignment: .center)
-//                .position(x: p.boundingRect.origin.x + p.boundingRect.width / 2,
-//                          y: p.boundingRect.origin.y + p.boundingRect.height / 2)
-//
-//            Rectangle()
-//                .stroke(.blue.opacity(0.5))
-//                .frame(width: p.boundingRect.width, height: p.boundingRect.height, alignment: .center)
-//                .position(x: touchLocation!,
-//                          y: self.path.yValue(at: touchLocation!))
-//
-//            Text(self.path.pe(at: touchLocation!).description)
-//                .position(x: p.boundingRect.origin.x + p.boundingRect.width / 2,
-//                          y: p.boundingRect.origin.y + p.boundingRect.height / 2)
-//                .rotationEffect(.degrees(180), anchor: .center)
-//                .rotation3DEffect(.degrees(180), axis: (x: 0, y: 1, z: 0))
             self.poins
                 .trim(from: 0, to: self.lineShow ? 1:0)
                 .stroke(lineData.borderColor.value, lineWidth: lineData.borderWidth)
@@ -189,13 +190,13 @@ extension LineView {
 }
 
 struct LineView_Previews: PreviewProvider {
-    static var data: ChartData = .init(data: [1, 2, 3, 5, 3, 20, 24, 50, 20, 40, 23, 24, 13, 24, 55, 16, 23, 19, 20, 21],
+    static var data: ChartData = .init(data: [1, 2, 3, 5, 3, 20, 24, 50, 20, -40, 23, 24, 13, 24, 55, 16, 23, 19, 20, 21],
                                        label: "123",
                                        backgroundColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.2),
                                        borderColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.8))
     static var previews: some View {
 //        Group {
-            LineView(lineData: data, globalDataCount: 20)
+        LineView(lineData: data, maxValue: 55, minValue: -40, globalDataCount: 20)
                 .environmentObject(ChartOptions.automatic)
             .onAppear {
                 Task {

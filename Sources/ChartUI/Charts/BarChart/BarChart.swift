@@ -24,7 +24,7 @@ public struct BarChart: AnyChart {
     public var body: some View {
         GeometryReader { chartGeometry in
             ZStack(alignment: .top) {
-                ChartContainerView { geometry, maxValue in
+                ChartContainerView { geometry, maxValue, minValue in
                     let spacing: CGFloat = (geometry.size.width) / CGFloat(chartDataset.labels.count * 3)
                     HStack(alignment: .bottom, spacing: spacing) {
                         ForEach(Array(chartDataset.labels.enumerated()), id: \.0) { (dataIndex, _) in

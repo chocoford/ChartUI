@@ -20,10 +20,12 @@ func drawLine(values: [Double?],
               step: CGFloat,
               valueRatio: CGFloat = 1,
 //              drawPoint: Bool = true,
+              minValue: Double? = nil,
               smooth: Bool = false,
-              close: Bool = false) -> Path {
+              close: Bool = false,
+              closeAt: CGFloat = 0) -> Path {
     var path = Path()
-    guard values.count > 1, let offset = values.compactMap({$0}).min() else {
+    guard values.count > 1, let offset = minValue ?? values.compactMap({$0}).min() else {
         return path
     }
     
@@ -64,8 +66,9 @@ func drawLine(values: [Double?],
     }
     
     if close {
-        path.addLine(to: CGPoint(x: prePoint.x, y: 0))
-//        path.addLine(to: .zero)
+        path.addLine(to: CGPoint(x: prePoint.x, y: closeAt))
+        path.addLine(to: CGPoint(x: 0, y: closeAt))
+        path.addLine(to: .zero)
         path.closeSubpath()
     }
     
@@ -86,9 +89,10 @@ func drawLine(values: [Double?],
 
 func drawPoints(points: [Double?],
                 step: CGFloat,
-                valueRatio: CGFloat = 1) -> Path {
+                valueRatio: CGFloat = 1,
+                minValue: Double? = nil) -> Path {
     Path { path in
-        guard points.count > 1, let offset = points.compactMap({$0}).min() else {
+        guard points.count > 1, let offset = minValue ?? points.compactMap({$0}).min() else {
             return
         }
         for (index, value) in points.enumerated() {

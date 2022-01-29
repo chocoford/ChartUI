@@ -19,10 +19,10 @@ public struct LineChart: AnyChart {
     public var body: some View {
         GeometryReader { chartGeometry in
             ZStack(alignment: .top) {
-                ChartContainerView(alignToValue: true) { geometry, maxValue in
+                ChartContainerView(alignToValue: true) { geometry, maxValue, minValue in
                     ZStack {
                         ForEach(chartDataset.data) { data in
-                            renderLineView(data)
+                            renderLineView(data, maxValue: maxValue, minValue: minValue)
                         }
                         Text(touchedLocationX?.description ?? "")
                     }
@@ -64,12 +64,16 @@ public struct LineChart: AnyChart {
         }
     }
     
-    func renderLineView(_ data: ChartData) -> some View {
+    func renderLineView(_ data: ChartData, maxValue: Double, minValue: Double) -> some View {
         let difference = chartDataset.labels.count - data.data.count
         if difference > 0 {
             data.data = data.data + Array<Double?>.init(repeating: nil, count: difference)
         }
-        return LineView(lineData: data, globalDataCount: chartDataset.labels.count, touchLocation: touchedLocationX)
+        return LineView(lineData: data,
+                        maxValue: maxValue,
+                        minValue: minValue,
+                        globalDataCount: chartDataset.labels.count,
+                        touchLocation: touchedLocationX)
     }
 }
 
@@ -95,13 +99,13 @@ struct LineChart_Previews: PreviewProvider {
         ForEach(ColorScheme.allCases, id: \.self) {
             VStack {
                 LineChart()
+                    .data(data)
                     .environmentObject(options)
-                    .environmentObject(data)
                     .onAppear {
                         Task {
                             let data = (await getAvgVideoTimeByDateAPI()).suffix(7)
                             self.data.labels = data.map({$0._id})
-                            self.data.data = [ChartData(data: data.map({Double($0.count) * -1}), label: "1",
+                            self.data.data = [ChartData(data: data.map({Double($0.count) - 40000}), label: "1",
                                                         backgroundColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.2),
                                                         borderColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.8))]
                         }
