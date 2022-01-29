@@ -73,6 +73,7 @@ public struct LineChart: AnyChart {
                         maxValue: maxValue,
                         minValue: minValue,
                         globalDataCount: chartDataset.labels.count,
+                        curvedLines: curvedLines,
                         touchLocation: touchedLocationX)
     }
 }
@@ -98,7 +99,7 @@ struct LineChart_Previews: PreviewProvider {
     static var previews: some View {
         ForEach(ColorScheme.allCases, id: \.self) {
             VStack {
-                LineChart()
+                LineChart(curvedLines: false)
                     .data(data)
                     .environmentObject(options)
                     .onAppear {
