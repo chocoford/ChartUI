@@ -16,8 +16,7 @@ struct CoordinatesContainerView<Content: View>: View {
     @EnvironmentObject public var options: ChartOptions
     @EnvironmentObject public var dataset: ChartDataset
     
-    // every time these propertis changed, view should redrawn.
-//    @State private var geometry: GeometryProxy? = nil
+    // every time these propertis changed, view should be redrawn.
     var maxValue: Double
     var minValue: Double
     var yAxesValueNum: Int
@@ -47,17 +46,17 @@ struct CoordinatesContainerView<Content: View>: View {
     private let content: Content
     
     
+    @State private var labelsRect: [CGRect] = []//.init(repeating: .zero, count: 12)
+
     // for animation
     @State private var showYValue: Bool = false
     
-    init(//geometry: GeometryProxy,
-         maxValue: Double,
+    init(maxValue: Double,
          minValue: Double,
          yAxesValueNum: Int,
          alignToLine: Bool = true,
          labelsIterateWay: LabelsIterateWay,
          @ViewBuilder content: () -> Content) {
-//        self.geometry = geometry
         self.maxValue = maxValue
         self.minValue = minValue
         self.yAxesValueNum = yAxesValueNum
@@ -68,36 +67,47 @@ struct CoordinatesContainerView<Content: View>: View {
     
     var body: some View {
         GeometryReader { geometry in
-            VStack {
+            VStack(alignment: .center) {
                 // TODO: redundancy labels alignment
                 /// data labels
-                GeometryReader { labelsGeometry in
-                    HStack {
-                        switch labelsIterateWay {
-                        case .dataset:
-                            ForEach(Array(dataset.data.enumerated()), id: \.0) { (index, data) in
-                                ChartDataLabelView(label: data.label,
-                                                   backgroundColor: data.backgroundColor.value,
-                                                   borderColor: data.borderColor.value,
-                                                   disabled: .constant(false))
-                                    .onTapGesture {
-                                        
-                                    }
-                            }
-                        case .data:
-                            /// only for first dataset's colors.
-                            ForEach(Array(dataset.labels.enumerated()), id: \.0) { (index, label) in
-                                ChartDataLabelView(label: label,
-                                                   backgroundColor: dataset.data.first?.backgroundColor(at: index).value ?? .clear,
-                                                   borderColor: dataset.data.first?.backgroundColor(at: index).value ?? .clear,
-                                                   disabled: .constant(false))
-                                    .onTapGesture {
-                                        
-                                    }
-                            }
+                HStack {
+                    switch labelsIterateWay {
+                    case .dataset:
+                        ForEach(Array(dataset.data.enumerated()), id: \.0) { (index, data) in
+                            ChartDataLabelView(viewIndex: index,
+                                               label: data.label,
+                                               backgroundColor: data.backgroundColor.value,
+                                               borderColor: data.borderColor.value,
+                                               disabled: .constant(false))
+                                .onTapGesture {
+                                    
+                                }
+                        }
+                    case .data:
+                        /// only for first dataset's colors.
+                        ForEach(Array(dataset.labels.enumerated()), id: \.0) { (index, label) in
+                            ChartDataLabelView(viewIndex: index,
+                                               label: label,
+                                               backgroundColor: dataset.data.first?.backgroundColor(at: index).value ?? .clear,
+                                               borderColor: dataset.data.first?.backgroundColor(at: index).value ?? .clear,
+                                               disabled: .constant(false))
+                                .onTapGesture {
+                                    
+                                }
                         }
                     }
-                }.frame(height: 20, alignment: .center)
+                }
+                .onPreferenceChange(ChartDataLabelViewPreferenceKey.self) { preferences in
+                    switch labelsIterateWay {
+                    case .dataset:
+                        self.labelsRect = .init(repeating: .zero, count: dataset.data.count)
+                    case .data:
+                        self.labelsRect = .init(repeating: .zero, count: dataset.labels.count)
+                    }
+                    for p in preferences {
+                        self.labelsRect[p.viewIndex] = p.bounds
+                    }
+                }
                 
                 ZStack {
                     if let xOptions = options.axes.x {
@@ -120,14 +130,8 @@ struct CoordinatesContainerView<Content: View>: View {
                     } else {
                         content
                     }
-                }//.layoutPriority(1)
+                }.layoutPriority(1)
             }
-//            .onAppear {
-//                self.geometry = geometry
-//            }
-//            .onChange(of: geometry.frame(in: .global)) { val in
-//                self.geometry = geometry
-//            }
         }
 //        .onAppear {
 //            self.show = true
@@ -265,7 +269,6 @@ struct CoordinatesContainerView<Content: View>: View {
                         }
                     }
                 }
-//                .border(.red)
             }
         }.padding(.leading, yAxesWidth)
             .padding(.top, 6)
@@ -277,7 +280,7 @@ struct CoordinatesContainerView<Content: View>: View {
 struct CoordinatesContainerView_Previews: PreviewProvider {
     @State static var labels: [String] = {
         var result: [String] = []
-        for i in 0..<22 {
+        for i in 0..<1 {
             result.append(String(format: "2021-01-%.2i", i))
         }
         return result
@@ -285,33 +288,25 @@ struct CoordinatesContainerView_Previews: PreviewProvider {
     static var previews: some View {
         VStack {
             GeometryReader { geometry in
-                CoordinatesContainerView(//geometry: geometry,
-                                         maxValue: 35,
+                CoordinatesContainerView(maxValue: 35,
                                          minValue: -100,
                                          yAxesValueNum: 10,
-                                         labelsIterateWay: .data) {
+                                         labelsIterateWay: .dataset)
+                {
                     GeometryReader { g in
-                        HStack{
-                            
-                        }
+                        HStack{}
                     }
                 }
-                                         .environmentObject(ChartOptions(axes: .init(x: .init(showAxes: true),
-                                                                                     y: .automatic),
-                                                                         coordinateLine: .hidden))
-                                         .environmentObject(ChartDataset(labels: labels,
-                                                                         data: [
-                                                                            ChartData(data: [1, 2],
-                                                                                      label: "1",
-                                                                                      backgroundColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.2),
-                                                                                      borderColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.8))
-                                                                         ]))
-                //                                         .onAppear {
-                //                                             Task {
-                //                                                 let data = (await getAvgVideoTimeByDateAPI()).prefix(50)
-                //                                                 labels = data.map({$0._id})
-//                                             }
-//                                         }
+                .environmentObject(ChartOptions(axes: .init(x: .init(showAxes: true),
+                                                            y: .automatic),
+                                                coordinateLine: .hidden))
+                .environmentObject(ChartDataset(labels: labels,
+                                                data: [
+                                                    ChartData(data: [1, 2],
+                                                              label: "1",
+                                                              backgroundColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.2),
+                                                              borderColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.8))
+                                                ]))
             }
             Button{
                 labels.append("string")
