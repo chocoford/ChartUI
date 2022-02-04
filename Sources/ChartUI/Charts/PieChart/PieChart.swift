@@ -1,6 +1,6 @@
 import SwiftUI
 
-public struct PieChart: AnyChart {
+public struct PieChart: ChartView {
     @EnvironmentObject var dataset: ChartDataset
     
     var slices: [PieSlice] {

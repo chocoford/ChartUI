@@ -1,6 +1,6 @@
 import SwiftUI
 
-public struct BarChart: AnyChart {
+public struct BarChart: ChartView {
     @Environment(\.colorScheme) var currentMode
     @EnvironmentObject public var chartDataset: ChartDataset
     @EnvironmentObject public var options: ChartOptions
@@ -63,7 +63,7 @@ public struct BarChart: AnyChart {
                                                 }
                                             }
                                         }
-                                        //                                .scaleEffect(getScaleSize(touchLocation: self.touchLocation, index: dataIndex), anchor: .bottom)
+//                                .scaleEffect(getScaleSize(touchLocation: self.touchLocation, index: dataIndex), anchor: .bottom)
                                         .animation(Animation.easeInOut(duration: 0.2), value: chartDataset.labels)
                                     } else {
                                         BarChartCell(value: 0, backgroundColor: Color.clear, borderColor: Color.clear, borderWdith: 0)
@@ -134,16 +134,18 @@ public struct BarChart: AnyChart {
 struct Barchart_Previews: PreviewProvider {
     @ObservedObject static var data: ChartDataset = .init(labels: [String](), data: [])
 
-    static var options: ChartOptions = .init(dataset: .init(showValue: false), axes: .automatic, coordinateLine: .automatic)
+    static var options: ChartOptions = .init(dataset: .init(showValue: false),
+                                             axes: .automatic,
+                                             coordinateLine: .automatic)
     static var previews: some View {
         ForEach(ColorScheme.allCases, id: \.self) {
             VStack {
                 BarChart()
-                    .environmentObject(data)
-                    .environmentObject(options)
+                    .data(data)
+                    .options(options)
                     .onAppear {
                         Task {
-                            let data = (await getAvgVideoTimeByDateAPI()).suffix(10)
+                            let data = (await getAvgVideoTimeByDateAPI()).suffix(50)
                             self.data.labels = data.map({$0._id})
                             self.data.data = [ChartData(data: data.map({Double($0.count) - 40000}), label: "1",
                                                         backgroundColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.2),
@@ -159,7 +161,6 @@ struct Barchart_Previews: PreviewProvider {
                         withAnimation {
                             data.data[i].data = .init(newData)
                         }
-                        
                     }
                 } label: {
                     Text("随机数据")

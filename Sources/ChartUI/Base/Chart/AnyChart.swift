@@ -7,22 +7,34 @@
 
 import SwiftUI
 
-protocol AnyChart: View {
-
+struct AnyChart<Content: View>: ChartView {
+    var content: Content
+    
+    init(_ view: Content){
+        self.content = view
+    }
+    
+    var body: some View {
+        self.content
+    }
 }
 
-extension AnyChart {
+protocol ChartView: View {
+    
+}
+
+extension ChartView {
     /// Attach chart options to a View
     /// - Parameter options: chart options
     /// - Returns: `View` with chart options attached
-    public func chartOptions(_ options: ChartOptions) -> some View {
-        self.environmentObject(options)
+    public func options(_ options: ChartOptions) -> some ChartView {
+        return AnyChart(self.environmentObject(options))
     }
     
     /// Attach chart dataset to a View
     /// - Parameter dataset: chart dataset
     /// - Returns: `View` with chart dataset attached
-    public func data(_ dataset: ChartDataset) -> some View {
-        self.environmentObject(dataset)
+    public func data(_ dataset: ChartDataset) -> some ChartView {
+        AnyChart(self.environmentObject(dataset))
     }
 }

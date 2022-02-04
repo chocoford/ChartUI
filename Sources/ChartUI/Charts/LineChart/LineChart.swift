@@ -1,6 +1,6 @@
 import SwiftUI
 
-public struct LineChart: AnyChart {
+public struct LineChart: ChartView {
     @EnvironmentObject var chartDataset: ChartDataset
     
     @State private var showIndicator: Bool = false
