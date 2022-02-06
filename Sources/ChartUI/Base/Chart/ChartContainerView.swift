@@ -95,26 +95,25 @@ struct ChartContainerView<Content: View>: View {
     
     var body: some View {
         let coordinateLineNum: Int = Int((abs(maxValue) + abs(minValue)) / gap)
-        
-        
-            CoordinatesContainerView(maxValue: maxValue,
-                                     minValue: minValue,
-                                     yAxesValueNum: coordinateLineNum,
-                                     alignToLine: alignToValue,
-                                     labelsIterateWay: self.lebelsIterateWay) {
-                ZStack {
-                    // MARK: Coordinate Line
-                    if options.coordinateLine != nil {
-                        CoordinatesLineView(coordinateLineNumber: coordinateLineNum, alignToLabel: alignToValue)
+        CoordinatesContainerView(maxValue: maxValue,
+                                 minValue: minValue,
+                                 yAxesValueNum: coordinateLineNum,
+                                 alignToLine: alignToValue,
+                                 labelsIterateWay: self.lebelsIterateWay) {
+            ZStack {
+                // MARK: Coordinate Line
+                if options.coordinateLine != nil {
+                    CoordinatesLineView(coordinateLineNumber: coordinateLineNum, alignToLabel: alignToValue)
+                }
+                if chartDataset.data.count > 0 && chartDataset.data.first?.data.count ?? 0 > 0 {
+                    GeometryReader { geometry in
+                        chartView(geometry, maxValue, minValue)
+                        //                                .animation(.easeInOut, value: options)
                     }
-                    if chartDataset.data.count > 0 && chartDataset.data.first?.data.count ?? 0 > 0 {
-                        GeometryReader { geometry in
-                            chartView(geometry, maxValue, minValue)
-                        }
-                    }
+                }
             }
         }
-        .padding(.top, 6)
+                                 .padding()
     }
 }
 
@@ -136,5 +135,8 @@ struct ChartContainerView_Previews: PreviewProvider {
                                             borderColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.8))]
             }
         }
+        .border(.red)
+        .padding(40)
+        .border(.red)
     }
 }

@@ -70,7 +70,7 @@ public class ChartOptions: ObservableObject, Equatable {
             public init(startAtZero: Bool = true,
                         max: Double? = nil, min: Double? = nil,
                         showValue: Bool = true, valuePadding: CGFloat = 6,
-                        showAxes: Bool = true, axesWidth: CGFloat = 0.5, axesColor: Color = .primary) {
+                        showAxes: Bool = true, axesWidth: CGFloat = 1, axesColor: Color = .primary) {
                 self.startAtZero = startAtZero
                 self.max = max
                 self.min = min

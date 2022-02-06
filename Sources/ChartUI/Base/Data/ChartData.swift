@@ -103,7 +103,11 @@ public class ChartDataset: ObservableObject, Equatable  {
         return lhs.data == rhs.data
     }
     
-    @Published public var data: [ChartData] = []
+    @Published public var data: [ChartData] = [] {
+        didSet {
+            initCancellable()
+        }
+    }
     @Published public var labels: [String] = []
 
     /// Initialize with data array

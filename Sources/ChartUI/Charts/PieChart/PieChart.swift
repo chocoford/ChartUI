@@ -114,6 +114,13 @@ struct PieChart_Previews: PreviewProvider {
                                                         borderColors: [.white])]
                         }
                     }
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .foregroundColor(.white)
+                            .shadow(color: .gray, radius: 4, x: 0, y: 0)
+                    )
+                    .padding(40)
+                    .frame(height: 500, alignment: .center)
                 Button {
                     for i in 0..<data.data.count {
                         var newData: [Double] = []

@@ -28,7 +28,7 @@ extension ChartView {
     /// - Parameter options: chart options
     /// - Returns: `View` with chart options attached
     public func options(_ options: ChartOptions) -> some ChartView {
-        return AnyChart(self.environmentObject(options))
+        AnyChart(self.environmentObject(options))
     }
     
     /// Attach chart dataset to a View

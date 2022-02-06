@@ -10,7 +10,7 @@ import SwiftUI
 
 struct ChartDataLabelView: View {
     var viewIndex: Int // for preference
-    var height: CGFloat = 20
+    var height: CGFloat = 14
     var label: String
     var backgroundColor: Color
     var borderColor: Color
@@ -20,16 +20,17 @@ struct ChartDataLabelView: View {
     let disabledBorderColor: Color = .init(.sRGB, red: 0, green: 0, blue: 0, opacity: 0.3)
     
     var body: some View {
-        GeometryReader { geometry in
-            HStack {
+//        GeometryReader { geometry in
+//            HStack {
                 HStack {
-                    RoundedRectangle(cornerRadius: 4)
+                    RoundedRectangle(cornerRadius: 2)
                         .overlay(
-                            RoundedRectangle(cornerRadius: 4)
+                            RoundedRectangle(cornerRadius: 2)
                                 .stroke(disabled ? disabledBorderColor : borderColor)
                         )
                         .foregroundColor(disabled ? disabledBackgroundColor : backgroundColor)
-                        .frame(width: 50, alignment: .center)
+//                        .frame(width: 14, alignment: .center)
+                        .fixedSize()
                     Text(label)
                         .if(disabled, transform: { $0.strikethrough() })
                 }
@@ -38,15 +39,15 @@ struct ChartDataLabelView: View {
                         disabled.toggle()
                     }
                 }
-                .preference(key: ChartDataLabelViewPreferenceKey.self,
-                            value: [ChartDataLabelViewPreferenceData(viewIndex: self.viewIndex,
-                                                                     bounds: geometry.frame(in: .named("chartLabelContainer")))])
-            }.frame(width: geometry.size.width)
+//                .preference(key: ChartDataLabelViewPreferenceKey.self,
+//                            value: [ChartDataLabelViewPreferenceData(viewIndex: self.viewIndex,
+//                                                                     bounds: geometry.frame(in: .named("chartLabelContainer")))])
+//            }.frame(width: geometry.size.width)
         }
-        .frame(height: height, alignment: .center)
+//        .frame(height: height, alignment: .center)
 //        .border(.red)
         
-    }
+//    }
 }
 
 struct ChartDataLabelView_Previews: PreviewProvider {

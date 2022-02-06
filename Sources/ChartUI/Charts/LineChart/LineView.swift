@@ -96,7 +96,6 @@ struct LineView: View {
                 self.linePathView()
                 if self.touchLocation != nil {
                     IndicatorPoint(color: lineData.borderColor)
-                        .border(.yellow)
                         .position(self.path.point(at: touchLocation!)) // <-- strange
                     // FIXME: self.path.point(at: touchLocation!).x != self.touchLocation!
 //                        .position(.init(x: self.touchLocation!,

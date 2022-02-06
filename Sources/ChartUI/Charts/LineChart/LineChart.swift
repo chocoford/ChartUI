@@ -24,7 +24,6 @@ public struct LineChart: ChartView {
                         ForEach(chartDataset.data) { data in
                             renderLineView(data, maxValue: maxValue, minValue: minValue)
                         }
-                        Text(touchedLocationX?.description ?? "")
                     }
                     
                     // FIXME: pass width to value show view. But it is ugly
@@ -54,6 +53,7 @@ public struct LineChart: ChartView {
                         }
                     }
                 }
+                
                 /// Value Indicator
                 if let location = touchedLocationX, let containerWidth = chartContainerWidth {
                     let elementWidth: CGFloat = containerWidth / CGFloat(chartDataset.labels.count - 1)
@@ -99,18 +99,25 @@ struct LineChart_Previews: PreviewProvider {
     static var previews: some View {
         ForEach(ColorScheme.allCases, id: \.self) {
             VStack {
-                LineChart(curvedLines: false)
+                LineChart(curvedLines: true)
                     .data(data)
                     .environmentObject(options)
                     .onAppear {
                         Task {
-                            let data = (await getAvgVideoTimeByDateAPI()).suffix(7)
+                            let data = (await getAvgVideoTimeByDateAPI()).suffix(17)
                             self.data.labels = data.map({$0._id})
-                            self.data.data = [ChartData(data: data.map({Double($0.count) - 40000}), label: "1",
+                            self.data.data = [ChartData(data: data.map({Double($0.count) - 10000}), label: "1",
                                                         backgroundColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.2),
                                                         borderColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.8))]
                         }
                     }
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .foregroundColor(.white)
+                            .shadow(color: .gray, radius: 4, x: 0, y: 0)
+                    )
+                    .padding(40)
+                    .frame(height: 500, alignment: .center)
                 Button {
                     for i in 0..<data.data.count {
                         var newData: [Double] = []

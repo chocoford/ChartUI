@@ -25,15 +25,15 @@ struct ChartValueShowView: View {
     var body: some View {
         VStack(alignment: .leading) {
             Text(dataset.labels[dataIndex])
-                .font(.title)
+                .font(.headline)
                 .bold()
             ForEach(dataset.data[datasetRange ?? 0..<dataset.data.count]) { dataset in
                 HStack(spacing: 4) {
-                    RoundedRectangle(cornerRadius: 4).fill(dataset.backgroundColor.value)
-                        .overlay(RoundedRectangle(cornerRadius: 4).stroke(dataset.borderColor.value))
+                    RoundedRectangle(cornerRadius: 2).fill(dataset.backgroundColor.value)
+                        .overlay(RoundedRectangle(cornerRadius: 2).stroke(dataset.borderColor.value))
                         .frame(width: 10, height: 10, alignment: .center)
                     Text("\(dataset.label) : \((dataset.data[dataIndex] ?? 0).description)")
-                        .font(.body)
+                        .font(.footnote)
                 }
             }
         }

@@ -27,7 +27,7 @@ public struct BarChart: ChartView {
                 ChartContainerView { geometry, maxValue, minValue in
                     let span: Double = (maxValue - minValue)
                     let spacing: CGFloat = (geometry.size.width) / CGFloat(chartDataset.labels.count * 3)
-                    HStack(alignment: .bottom, spacing: spacing) {
+                    HStack(alignment: .center, spacing: spacing) {
                         ForEach(Array(chartDataset.labels.enumerated()), id: \.0) { (dataIndex, _) in
                             /// Value relative to maximum value
                             HStack(alignment: .bottom, spacing: spacing / 5) {
@@ -47,7 +47,6 @@ public struct BarChart: ChartView {
                                                                 anchor: .bottom)
                                                 .offset(x: 0, y: minValue / span * geometry.size.height)
                                                 .opacity(self.touchedBarsGroupIndex == nil ? 1 : self.touchedBarsGroupIndex == dataIndex ? 1 : 0.6)
-//                                                .animation(.default, value: self.touchedBarsGroupIndex)
                                             // TODO: 不是很完美的解决方案
                                             if options.dataset.showValue {
                                                 GeometryReader { geometry in
@@ -63,7 +62,6 @@ public struct BarChart: ChartView {
                                                 }
                                             }
                                         }
-//                                .scaleEffect(getScaleSize(touchLocation: self.touchLocation, index: dataIndex), anchor: .bottom)
                                         .animation(Animation.easeInOut(duration: 0.2), value: chartDataset.labels)
                                     } else {
                                         BarChartCell(value: 0, backgroundColor: Color.clear, borderColor: Color.clear, borderWdith: 0)
@@ -78,17 +76,23 @@ public struct BarChart: ChartView {
                         }
                     }
                     .padding(.horizontal, spacing / 2)
-                    .gesture(DragGesture()
-                                .onChanged({ value in
-                        let containerWidth: CGFloat = geometry.size.width
-                        let elementWidth: CGFloat = containerWidth / CGFloat(chartDataset.labels.count)
-                        self.touchedBarsGroupIndex = Int(value.location.x / elementWidth)
-                    })
-                                .onEnded({ value in
-                        withAnimation {
-                            self.touchedBarsGroupIndex = nil
-                        }
-                    })
+//                    .frame(width: geometry.size.width, height: geometry.size.height, alignment: .center)
+                    .gesture(
+                        DragGesture()
+                            .onChanged({ value in
+                                let containerWidth: CGFloat = geometry.size.width
+                                let elementWidth: CGFloat = containerWidth / CGFloat(chartDataset.labels.count)
+                                let index: Int = Int(value.location.x / elementWidth)
+                                withAnimation(.linear(duration: 0.2)) {
+                                    self.touchedBarsGroupIndex = index < chartDataset.labels.count ? (index > 0 ? index : 0) : chartDataset.labels.count - 1
+                                }
+                                
+                            })
+                            .onEnded({ value in
+                                withAnimation {
+                                    self.touchedBarsGroupIndex = nil
+                                }
+                            })
                     )
                     .onHover { hover in
                         if !hover {
@@ -98,8 +102,9 @@ public struct BarChart: ChartView {
                             
                         }
                     }
-                    
                 }
+
+                
                 /// Value Indicator
                 if let index = touchedBarsGroupIndex {
                     ChartValueShowView(geometry: chartGeometry, dataIndex: index)
@@ -145,46 +150,62 @@ struct Barchart_Previews: PreviewProvider {
                     .options(options)
                     .onAppear {
                         Task {
-                            let data = (await getAvgVideoTimeByDateAPI()).suffix(50)
+                            let data = (await getAvgVideoTimeByDateAPI()).suffix(20)
                             self.data.labels = data.map({$0._id})
-                            self.data.data = [ChartData(data: data.map({Double($0.count) - 40000}), label: "1",
+                            self.data.data = [ChartData(data: data.map({Double($0.count) - 40000}), label: "data 1",
                                                         backgroundColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.2),
                                                         borderColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.8))]
                         }
                     }
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .foregroundColor(.white)
+                            .shadow(color: .gray, radius: 4, x: 0, y: 0)
+                    )
+                    .padding(40)
+                    .frame(height: 500, alignment: .center)
                 Button {
                     for i in 0..<data.data.count {
                         var newData: [Double] = []
                         for _ in 0..<data.data[i].data.count {
                             newData.append(Double.random(in: 0...100))
                         }
-                        withAnimation {
+//                        withAnimation {
                             data.data[i].data = .init(newData)
-                        }
+//                        }
                     }
                 } label: {
-                    Text("随机数据")
+                    Text("random data")
                 }
                 HStack {
                     Button {
-                        options.axes = .automatic
+                        withAnimation {
+                            options.axes = .automatic
+                        }
+                        
                     } label: {
-                        Text("显示坐标(值)")
+                        Text("show axes(value)")
                     }
                     Button {
-                        options.axes = .hidden
+                        withAnimation {
+                            options.axes = .hidden
+                        }
                     } label: {
-                        Text("隐藏坐标(值)")
+                        Text("hide axes(value)")
                     }
                     Button {
+                        withAnimation {
                         options.axes.x.showValue = true
                         options.axes.y.showValue = true
+                        }
                     } label: {
                         Text("显示坐标值")
                     }
                     Button {
+                        withAnimation {
                         options.axes.x.showValue = false
                         options.axes.y.showValue = false
+                        }
                     } label: {
                         Text("隐藏坐标值")
                     }
@@ -193,28 +214,29 @@ struct Barchart_Previews: PreviewProvider {
                     Button {
                         data.data[0].data.append(Double.random(in: 0..<10))
                     } label: {
-                        Text("添加数据")
+                        Text("add data")
                     }
                     Button {
                         data.data[0].data.removeLast()
                     } label: {
-                        Text("减少数据")
+                        Text("remove data")
                     }
                 }
                 HStack {
                     Button {
                         data.labels.append(Int.random(in: 0..<10).description)
                     } label: {
-                        Text("添加标签")
+                        Text("add labels")
                     }
                     Button {
                         data.labels.removeLast()
                     } label: {
-                        Text("减少标签")
+                        Text("remove labels")
                     }
                 }
             }
-            .frame(width: nil, height: nil, alignment: .center)
+           
+            
             .preferredColorScheme($0)
         }
 
