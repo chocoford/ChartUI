@@ -108,7 +108,6 @@ struct ChartContainerView<Content: View>: View {
                 if chartDataset.data.count > 0 && chartDataset.data.first?.data.count ?? 0 > 0 {
                     GeometryReader { geometry in
                         chartView(geometry, maxValue, minValue)
-                        //                                .animation(.easeInOut, value: options)
                     }
                 }
             }
@@ -135,8 +134,8 @@ struct ChartContainerView_Previews: PreviewProvider {
                                             borderColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.8))]
             }
         }
-        .border(.red)
+//        .border(.red)
         .padding(40)
-        .border(.red)
+//        .border(.red)
     }
 }

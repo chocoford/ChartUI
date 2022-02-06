@@ -93,7 +93,7 @@ struct CoordinatesContainerView<Content: View>: View {
                                         height -= dimentions.height + spacing
                                     }
                                     let result: CGFloat = width
-                                    if index >= self.dataset.labels.count - 1 {
+                                    if index >= self.dataset.data.count - 1 {
                                         width = 0 //last item
                                     } else {
                                         width -= dimentions.width + spacing
@@ -102,7 +102,7 @@ struct CoordinatesContainerView<Content: View>: View {
                                 }
                                 .alignmentGuide(VerticalAlignment.center) { dimentions in
                                     let result = height
-                                    if index >= self.dataset.labels.count - 1 {
+                                    if index >= self.dataset.data.count - 1 {
                                         height = 0 // last item
                                     }
                                     return result
@@ -304,7 +304,7 @@ struct CoordinatesContainerView_Previews: PreviewProvider {
                 CoordinatesContainerView(maxValue: 35,
                                          minValue: -100,
                                          yAxesValueNum: 10,
-                                         labelsIterateWay: .data)
+                                         labelsIterateWay: .dataset)
                 {
                     GeometryReader { g in
                         HStack{}
@@ -316,12 +316,16 @@ struct CoordinatesContainerView_Previews: PreviewProvider {
                                                     ChartData(data: [1, 2],
                                                               label: "1",
                                                               backgroundColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.2),
+                                                              borderColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.8)),
+                                                    ChartData(data: [1, 2],
+                                                              label: "2",
+                                                              backgroundColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.2),
                                                               borderColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.8))
                                                 ]))
                 .padding(28)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
-                        .foregroundColor(.white)
+                        .foregroundColor(.black)
                         .shadow(color: .gray, radius: 4, x: 0, y: 0)
                 )
                 .padding(30)
