@@ -51,6 +51,7 @@ struct CoordinatesContainerView<Content: View>: View {
     // for animation
     @State private var showYValue: Bool = false
     
+    
     init(maxValue: Double,
          minValue: Double,
          yAxesValueNum: Int,
@@ -68,9 +69,13 @@ struct CoordinatesContainerView<Content: View>: View {
     var body: some View {
         GeometryReader { geometry in
             VStack(alignment: .center) {
-                // TODO: redundancy labels alignment
+                // TODO: But need to align to center when no more than one line.
                 /// data labels
-                HStack {
+                ZStack(alignment: .center) {
+                    var width = CGFloat.zero
+                    var height = CGFloat.zero
+                    let spacing: CGFloat = 4
+                    
                     switch labelsIterateWay {
                     case .dataset:
                         ForEach(Array(dataset.data.enumerated()), id: \.0) { (index, data) in
@@ -81,6 +86,27 @@ struct CoordinatesContainerView<Content: View>: View {
                                                disabled: .constant(false))
                                 .onTapGesture {
                                     
+                                }
+                            /// https://stackoverflow.com/a/58876712/12299030
+                                .alignmentGuide(HorizontalAlignment.center) { dimentions in
+                                    if (abs(width - dimentions.width) > geometry.size.width) {
+                                        width = 0
+                                        height -= dimentions.height + spacing
+                                    }
+                                    let result: CGFloat = width
+                                    if index >= self.dataset.labels.count - 1 {
+                                        width = 0 //last item
+                                    } else {
+                                        width -= dimentions.width + spacing
+                                    }
+                                    return result
+                                }
+                                .alignmentGuide(VerticalAlignment.center) { dimentions in
+                                    let result = height
+                                    if index >= self.dataset.labels.count - 1 {
+                                        height = 0 // last item
+                                    }
+                                    return result
                                 }
                         }
                     case .data:
@@ -94,9 +120,31 @@ struct CoordinatesContainerView<Content: View>: View {
                                 .onTapGesture {
                                     
                                 }
+                            /// https://stackoverflow.com/a/58876712/12299030
+                                .alignmentGuide(HorizontalAlignment.center) { dimentions in
+                                    if (abs(width - dimentions.width) > geometry.size.width) {
+                                        width = 0
+                                        height -= dimentions.height + spacing
+                                    }
+                                    let result: CGFloat = width
+                                    if index >= self.dataset.labels.count - 1 {
+                                        width = 0 //last item
+                                    } else {
+                                        width -= dimentions.width + spacing
+                                    }
+                                    return result
+                                }
+                                .alignmentGuide(VerticalAlignment.center) { dimentions in
+                                    let result = height
+                                    if index >= self.dataset.labels.count - 1 {
+                                        height = 0 // last item
+                                    }
+                                    return result
+                                }
                         }
                     }
                 }
+                .frame(maxWidth: geometry.size.width, alignment: .center)
                 .onPreferenceChange(ChartDataLabelViewPreferenceKey.self) { preferences in
                     switch labelsIterateWay {
                     case .dataset:
@@ -110,35 +158,16 @@ struct CoordinatesContainerView<Content: View>: View {
                 }
                 
                 ZStack {
-                    if let xOptions = options.axes.x {
-                        VStack(spacing: 0) {
-                            if let yOptions = options.axes.y {
-                                HStack(spacing: 0) {
-                                    yAxesView(yOptions)
-                                    content
-                                }
-                            } else {
-                                content
-                            }
-                            xAxesView(xOptions, in: geometry)
-                        }
-                    } else if let yOptions = options.axes.y {
+                    VStack(spacing: 0) {
                         HStack(spacing: 0) {
-                            yAxesView(yOptions)
+                            yAxesView(options.axes.y)
                             content
                         }
-                    } else {
-                        content
+                        xAxesView(options.axes.x, in: geometry)
                     }
-                }.layoutPriority(1)
+                }//x.layoutPriority(1)
             }
         }
-//        .onAppear {
-//            self.show = true
-//        }
-//        .onDisappear {
-//            self.show = false
-//        }
     }
     func yAxesView(_ options: ChartOptions.AxesOptions.Options) -> some View {
         GeometryReader { yGeometry in
@@ -154,47 +183,32 @@ struct CoordinatesContainerView<Content: View>: View {
                             Text(absMax > 1 ? String(Int(value)) : String(format: "%.1f", value))
                                 .offset(x: 0, y: -7)
                                 .frame(height: yGeometry.size.height / CGFloat(num), alignment: .top)
-                                .animation(.easeInOut(duration: 0.2), value: maxValue)
-                                .animation(.spring().delay(Double(i) * 0.04), value: showYValue)
+                                .show(options.showValue)
                         }
                     }
                     VStack(alignment: .trailing){
                         Spacer()
                         HStack() {
                             Text(absMax > 1 ? String(Int(minValue)) : String(format: "%.1f", minValue)).offset(x: 0, y: 7)
+                                .show(options.showValue)
                         }
                     }
                 }
                 .frame(width: yGeometry.size.width - options.axesWidth)
                 .padding(.trailing, options.valuePadding)
-                .onAppear {
-                    withAnimation {
-                        showYValue = true
-                    }
-                    
-                }
-                .onDisappear {
-                    withAnimation {
-                    showYValue = false
-                    }
-                }
+                .transition(.opacity)
+                .animation(.easeInOut, value: options)
             }
             /// Axes
-            if options.showAxes {
-                Path { path in
-                    path.move(to: .init(x: yGeometry.size.width, y: 0))
-                    path.addLine(to: .init(x: yGeometry.size.width, y: yGeometry.size.height))
-                }.stroke(options.axesColor, lineWidth: options.axesWidth)
-                    .frame(width: options.axesWidth)
-                    .transition(.opacity.animation(.linear))
-
-            }
-            
+            Capsule()
+                .fill(options.axesColor)
+                .frame(width: yGeometry.size.height, height: options.axesWidth, alignment: .center)
+                .rotationEffect(.degrees(90), anchor: .topLeading)
+                .offset(x: yGeometry.size.width, y: 0)
+                .show(options.showAxes)
         }
         .frame(width: yAxesWidth)
         .font(.footnote)
-        /// animate when show/hide axesValue
-//        .animation(.easeInOut, value: yAxesWidth)
     }
     
     
@@ -237,42 +251,38 @@ struct CoordinatesContainerView<Content: View>: View {
         }
         
         return ZStack(alignment: .top) {
-            if options.showAxes {
-                Path { path in
-                    path.move(to: .init(x: 0, y: -6))
-                    path.addLine(to: .init(x: axesLength, y: -6))
-                }.stroke(options.axesColor, lineWidth: options.axesWidth)
-                    .transition(.opacity.animation(.linear))
-                    .frame(height: 1) // will not show if height < 1
-            } else {
-                HStack{}.frame(height: options.axesWidth)
-            }
-            if dataset.labels.count > 0 && options.showValue {
-                let capacity: CGFloat = ceil(minLabelFrameWidth / labelFrameWidth)
-                if alignToLine, let firstLabel = dataset.labels.first {
-                    VStack(alignment: .leading) {
-                        renderLabel(content: firstLabel, width: labelFrameWidth * capacity, index: 0)
-                            .offset(x: -0.5 * labelFrameWidth * capacity, y: 0)
-                    }
-                    .frame(width: axesLength, height: nil, alignment: .leading)
+            Capsule()
+                .fill(options.axesColor)
+                .frame(width: axesLength, height: options.axesWidth, alignment: .center)
+                .show(options.showAxes)
+            
+            let capacity: CGFloat = ceil(minLabelFrameWidth / labelFrameWidth)
+            if alignToLine, let firstLabel = dataset.labels.first {
+                VStack(alignment: .leading) {
+                    renderLabel(content: firstLabel, width: labelFrameWidth * capacity, index: 0)
+                        .offset(x: -0.5 * labelFrameWidth * capacity, y: 0)
                 }
-                HStack(spacing: 0) {
-                    ForEach(Array((alignToLine ? Array(dataset.labels.dropFirst()) : dataset.labels).enumerated()),
-                            id: \.0) { (i, label) in
-                        let ii = alignToLine ? i + 1 : i
-                        if ii % Int(capacity) == 0 {
-                            renderLabel(content: label, width: labelFrameWidth * capacity, index: ii)
-                                .if(alignToLine, transform: { view in
-                                    view
-                                        .offset(x: 0.5 * labelFrameWidth * capacity, y: 0)
-                                })
-                        }
+                .padding(.top, 6)
+                .frame(width: axesLength, height: nil, alignment: .leading)
+            }
+            HStack(spacing: 0) {
+                ForEach(Array((alignToLine ? Array(dataset.labels.dropFirst()) : dataset.labels).enumerated()),
+                        id: \.0) { (i, label) in
+                    let ii = alignToLine ? i + 1 : i
+                    if ii % Int(capacity) == 0 {
+                        renderLabel(content: label, width: labelFrameWidth * capacity, index: ii)
+                            .if(alignToLine, transform: { view in
+                                view
+                                    .offset(x: 0.5 * labelFrameWidth * capacity, y: 0)
+                            })
                     }
                 }
             }
-        }.padding(.leading, yAxesWidth)
             .padding(.top, 6)
-            .font(.footnote)
+            .show(dataset.labels.count > 0 && options.showValue)
+        }
+        .padding(.leading, yAxesWidth)
+        .font(.footnote)
     }
     
 }
@@ -280,26 +290,28 @@ struct CoordinatesContainerView<Content: View>: View {
 struct CoordinatesContainerView_Previews: PreviewProvider {
     @State static var labels: [String] = {
         var result: [String] = []
-        for i in 0..<1 {
+        for i in 0..<5 {
             result.append(String(format: "2021-01-%.2i", i))
         }
         return result
     }()
+    @State static var options: ChartOptions = .init(dataset: .init(showValue: false),
+                                             axes: .automatic,
+                                             coordinateLine: .automatic)
+    
     static var previews: some View {
         VStack {
             GeometryReader { geometry in
                 CoordinatesContainerView(maxValue: 35,
                                          minValue: -100,
                                          yAxesValueNum: 10,
-                                         labelsIterateWay: .dataset)
+                                         labelsIterateWay: .data)
                 {
                     GeometryReader { g in
                         HStack{}
                     }
                 }
-                .environmentObject(ChartOptions(axes: .init(x: .init(showAxes: true),
-                                                            y: .automatic),
-                                                coordinateLine: .hidden))
+                .environmentObject(options)
                 .environmentObject(ChartDataset(labels: labels,
                                                 data: [
                                                     ChartData(data: [1, 2],
@@ -307,11 +319,33 @@ struct CoordinatesContainerView_Previews: PreviewProvider {
                                                               backgroundColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.2),
                                                               borderColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.8))
                                                 ]))
+                .padding(28)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .foregroundColor(.white)
+                        .shadow(color: .gray, radius: 4, x: 0, y: 0)
+                )
+                .padding(30)
+                .frame(height: 500, alignment: .center)
             }
             Button{
                 labels.append("string")
             } label: {
                 Text("add label")
+            }
+            HStack {
+                Button {
+                    options.axes.x.showValue = true
+                    options.axes.y.showValue = true
+                } label: {
+                    Text("显示坐标值")
+                }
+                Button {
+                    options.axes.x.showValue = false
+                    options.axes.y.showValue = false
+                } label: {
+                    Text("隐藏坐标值")
+                }
             }
         }
         .frame(width: nil, height: 700, alignment: .center)
