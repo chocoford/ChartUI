@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import WrappingHStack
 
 enum LabelsIterateWay {
     case dataset
