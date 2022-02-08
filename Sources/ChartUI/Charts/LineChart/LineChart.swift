@@ -23,8 +23,13 @@ public struct LineChart: ChartView {
                     ZStack {
                         ForEach(chartDataset.data) { data in
                             renderLineView(data, maxValue: maxValue, minValue: minValue)
+//                                .scaleEffect(x: geometry.size.width / (geometry.size.width + 10), y: 1, anchor: .center)
                         }
                     }
+//                    .frame(width: geometry.size.width + 10,
+//                           height: geometry.size.height,
+//                           alignment: .center)
+//                    .offset(x: -5, y: 0)
                     
                     // FIXME: pass width to value show view. But it is ugly
                     .onAppear(perform: {
@@ -75,6 +80,7 @@ public struct LineChart: ChartView {
                         globalDataCount: chartDataset.labels.count,
                         curvedLines: curvedLines,
                         touchLocation: touchedLocationX)
+//            .border(.red)
     }
 }
 
@@ -103,13 +109,13 @@ struct LineChart_Previews: PreviewProvider {
                     .data(data)
                     .environmentObject(options)
                     .onAppear {
-                        Task {
-                            let data = (await getAvgVideoTimeByDateAPI()).suffix(17)
-                            self.data.labels = data.map({$0._id})
-                            self.data.data = [ChartData(data: data.map({Double($0.count) - 10000}), label: "1",
-                                                        backgroundColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.2),
-                                                        borderColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.8))]
-                        }
+//                        Task {
+//                            let data = (await getAvgVideoTimeByDateAPI()).suffix(17)
+//                            self.data.labels = data.map({$0._id})
+//                            self.data.data = [ChartData(data: data.map({Double($0.count) - 10000}), label: "1",
+//                                                        backgroundColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.2),
+//                                                        borderColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.8))]
+//                        }
                     }
                     .background(
                         RoundedRectangle(cornerRadius: 12)

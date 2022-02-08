@@ -120,7 +120,7 @@ struct ChartContainerView_Previews: PreviewProvider {
     @ObservedObject static var data: ChartDataset = .init(labels: [String](), data: [])
     static var previews: some View {
         ChartContainerView { geometry, maxValue, minValue  in
-            Rectangle().foregroundColor(.clear).border(.red)
+            Rectangle().foregroundColor(.clear)
         }
         .environmentObject(ChartOptions.automatic)
         .environmentObject(data)
@@ -134,8 +134,6 @@ struct ChartContainerView_Previews: PreviewProvider {
                                             borderColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.8))]
             }
         }
-//        .border(.red)
         .padding(40)
-//        .border(.red)
     }
 }

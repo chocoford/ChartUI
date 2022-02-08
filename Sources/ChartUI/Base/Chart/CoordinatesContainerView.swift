@@ -68,7 +68,6 @@ struct CoordinatesContainerView<Content: View>: View {
     var body: some View {
         GeometryReader { geometry in
             VStack(alignment: .center) {
-                // TODO: But need to align to center when no more than one line.
                 /// data labels
                 ZStack(alignment: .center) {
                     var width = CGFloat.zero
