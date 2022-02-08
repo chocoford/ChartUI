@@ -38,8 +38,6 @@ struct LineView: View {
     }
     
     var zeroPosition: CGFloat {
-
-        
         if maxValue.sign == minValue.sign {
             if maxValue > 0 {
                 return 0

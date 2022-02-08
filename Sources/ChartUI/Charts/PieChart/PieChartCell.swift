@@ -15,8 +15,8 @@ public struct PieChartCell: View {
 	var endDegree: Double
 
     var index: Int
-    var backgroundColor: Color
-    var borderColor: Color
+    var backgroundColor: ChartColor<Color>
+    var borderColor: ChartColor<Color>
     
     public var body: some View {
         GeometryReader { geometry in
@@ -35,8 +35,15 @@ public struct PieChartCell: View {
             }
             
             path
-                .fill(backgroundColor)
-                .overlay(path.stroke(borderColor,
+//                .if(backgroundColor.isPlump, transform: { _ in
+//                    ChartColor.plump(fill: backgroundColor.value) {
+//                        path
+//                    }
+//                }, falseTransform: { _ in
+//                    path.fill(backgroundColor.value)
+//                })
+                .fill(backgroundColor.value)
+                .overlay(path.stroke(borderColor.value,
                                      lineWidth: (startDegree == 0 && endDegree == 0 ? 0 : 1)))
                 .scaleEffect(self.show ? 1 : 0)
                 .animation(Animation.spring().delay(Double(self.index) * 0.04), value: show)
@@ -56,8 +63,8 @@ struct PieChartCell_Previews: PreviewProvider {
                     startDegree: 00.0,
                     endDegree: 90.0,
                     index: 0,
-                    backgroundColor: Color.red,
-                    borderColor: .green)
+                    backgroundColor: ChartColor(color: .red).plump(),
+                    borderColor: ChartColor(color: .green))
                 }.frame(width: 200, height: 200)
             
             GeometryReader { geometry in
@@ -66,8 +73,8 @@ struct PieChartCell_Previews: PreviewProvider {
                 startDegree: 0.0,
                 endDegree: 90.0,
                 index: 0,
-                backgroundColor: Color.green,
-                borderColor: .red)
+                backgroundColor: ChartColor(color: .green),
+                borderColor:  ChartColor(color: .red))
             }.frame(width: 100, height: 100)
             
             GeometryReader { geometry in
@@ -76,8 +83,8 @@ struct PieChartCell_Previews: PreviewProvider {
                 startDegree: 100.0,
                 endDegree: 135.0,
                 index: 0,
-                backgroundColor: Color.black,
-                borderColor: .black)
+                backgroundColor: ChartColor(color: .black),
+                borderColor: ChartColor(color: .black))
             }.frame(width: 100, height: 100)
             
             GeometryReader { geometry in
@@ -86,8 +93,8 @@ struct PieChartCell_Previews: PreviewProvider {
                 startDegree: 185.0,
                 endDegree: 290.0,
                 index: 1,
-                backgroundColor: Color.purple,
-                borderColor: .purple)
+                backgroundColor: ChartColor(color: .purple),
+                borderColor: ChartColor(color: .purple))
             }.frame(width: 100, height: 100)
             
             GeometryReader { geometry in
@@ -96,8 +103,8 @@ struct PieChartCell_Previews: PreviewProvider {
                 startDegree: 0,
                 endDegree: 0,
                 index: 0,
-                backgroundColor: Color.purple,
-                borderColor: .purple)
+                backgroundColor: ChartColor(color: .purple),
+                borderColor: ChartColor(color: .purple))
             }.frame(width: 100, height: 100)
             
         }.previewLayout(.fixed(width: 300, height: 300))

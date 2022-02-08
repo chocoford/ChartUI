@@ -39,8 +39,8 @@ public struct BarChart: ChartView {
                                         ZStack(alignment: .bottom) {
                                             BarChartCell(value: abs(normalizedValue),
                                                          index: dataIndex,
-                                                         backgroundColor: dataset.backgroundColor.value,
-                                                         borderColor: dataset.borderColor.value,
+                                                         backgroundColor: dataset.backgroundColor,
+                                                         borderColor: dataset.borderColor,
                                                          borderWdith: dataset.borderWidth,
                                                          showDelay: Double(datasetIndex) * 0.2)
                                                 .rotationEffect(.init(degrees: normalizedValue.sign == .minus ? 180 : 0),
@@ -64,7 +64,7 @@ public struct BarChart: ChartView {
                                         }
                                         .animation(Animation.easeInOut(duration: 0.2), value: chartDataset.labels)
                                     } else {
-                                        BarChartCell(value: 0, backgroundColor: Color.clear, borderColor: Color.clear, borderWdith: 0)
+                                        BarChartCell(value: 0, backgroundColor: ChartColor(color: .clear), borderColor: ChartColor(color: .clear), borderWdith: 0)
                                     }
                                 }
                             }
@@ -76,7 +76,6 @@ public struct BarChart: ChartView {
                         }
                     }
                     .padding(.horizontal, spacing / 2)
-//                    .frame(width: geometry.size.width, height: geometry.size.height, alignment: .center)
                     .gesture(
                         DragGesture()
                             .onChanged({ value in
@@ -96,7 +95,7 @@ public struct BarChart: ChartView {
                     )
                     .onHover { hover in
                         if !hover {
-                            withAnimation {
+                            withAnimation(.linear(duration: 0.2)) {
                                 self.touchedBarsGroupIndex = nil
                             }
                             
@@ -126,15 +125,6 @@ public struct BarChart: ChartView {
         }
         return CGSize(width: 1, height: 1)
     }
-    //
-    /// Get data value where touch happened
-    /// - Parameter width: width of chart
-    /// - Returns: value as `Double` if chart has data
-    //    func getCurrentValue(width: CGFloat) -> Double? {
-    //        guard self.chartData.data.count > 0 else { return nil}
-    //        let index = max(0,min(self.chartData.data.count-1,Int(floor((self.touchLocation*width)/(width/CGFloat(self.chartData.data.count))))))
-    //        return self.chartData.values[index]
-    //    }
 }
 struct Barchart_Previews: PreviewProvider {
     @ObservedObject static var data: ChartDataset = .init(labels: [String](), data: [])
@@ -153,8 +143,8 @@ struct Barchart_Previews: PreviewProvider {
                             let data = (await getAvgVideoTimeByDateAPI()).suffix(20)
                             self.data.labels = data.map({$0._id})
                             self.data.data = [ChartData(data: data.map({Double($0.count) - 40000}), label: "data 1",
-                                                        backgroundColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.2),
-                                                        borderColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.8))]
+                                                        backgroundColor: ChartColor(color: .green).plump(),
+                                                        borderColor: ChartColor(color: .clear))]
                         }
                     }
                     .background(

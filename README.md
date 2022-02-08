@@ -57,7 +57,7 @@ var dataset: ChartDataset = .init(labels: labels, data: [data])
 
 ## License
 
-
+**`ChartUI` is released under the terms of the [MIT](./LICENSE) license.**
 
 ## Acknowledgement
 

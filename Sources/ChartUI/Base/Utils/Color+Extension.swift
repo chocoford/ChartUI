@@ -1,6 +1,16 @@
 import SwiftUI
+#if canImport(UIKit)
+import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
 
 extension Color {
+    init(_ colorSpace: RGBColorSpace = .sRGB,
+         r: Int, g: Int, b: Int, a: Double = 1) {
+        self.init(colorSpace, red: Double(r) / 255.0, green: Double(g) / 255.0, blue: Double(b) / 255.0, opacity: a)
+    }
+    
 	/// Create a `Color` from a hexadecimal representation
 	/// - Parameter hexString: 3, 6, or 8-character string, with optional (ignored) punctuation such as "#"
     init(hexString: String) {
@@ -41,5 +51,41 @@ extension Color {
         //---------
         
         self.init(hue: hue, saturation: newSaturation, brightness: brightness, opacity: opacity)
+    }
+    
+    var rgbaComponents: (red: CGFloat, green: CGFloat, blue: CGFloat, opacity: CGFloat) {
+        
+#if canImport(UIKit)
+        typealias NativeColor = UIColor
+#elseif canImport(AppKit)
+        typealias NativeColor = NSColor
+#endif
+        
+        var r: CGFloat = 0
+        var g: CGFloat = 0
+        var b: CGFloat = 0
+        var o: CGFloat = 0
+        
+        NativeColor(self).getRed(&r, green: &g, blue: &b, alpha: &o)
+        
+        return (r, g, b, o)
+    }
+    
+    var hsbaComponents: (hue: CGFloat, saturation: CGFloat, brightness: CGFloat, opacity: CGFloat) {
+        
+#if canImport(UIKit)
+        typealias NativeColor = UIColor
+#elseif canImport(AppKit)
+        typealias NativeColor = NSColor
+#endif
+        
+        var r: CGFloat = 0
+        var s: CGFloat = 0
+        var b: CGFloat = 0
+        var o: CGFloat = 0
+        
+        NativeColor(self).getHue(&r, saturation: &s, brightness: &b, alpha: &o)
+        
+        return (r, s, b, o)
     }
 }

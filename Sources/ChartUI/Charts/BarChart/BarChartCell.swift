@@ -4,10 +4,9 @@ import SwiftUI
 public struct BarChartCell<SBG: ShapeStyle, SBR: ShapeStyle>: View {
     var value: Double
     var index: Int = 0
-    var backgroundColor: SBG
-    var borderColor: SBR
+    var backgroundColor: ChartColor<SBG>
+    var borderColor: ChartColor<SBR>
     var borderWdith: CGFloat
-//    var touchLocation: CGFloat
     var showDelay: Double
     @EnvironmentObject public var options: ChartOptions
 
@@ -22,17 +21,15 @@ public struct BarChartCell<SBG: ShapeStyle, SBR: ShapeStyle>: View {
     ///   - touchLocation: torch location
     public init(value: Double,
                 index: Int = 0,
-                backgroundColor: SBG,
-                borderColor: SBR,
+                backgroundColor: ChartColor<SBG>,
+                borderColor: ChartColor<SBR>,
                 borderWdith: CGFloat,
-//                touchLocation: CGFloat,
                 showDelay: Double = 0) {
         self.value = value
         self.index = index
         self.backgroundColor = backgroundColor
         self.borderColor = borderColor
         self.borderWdith = borderWdith
-//        self.touchLocation = touchLocation
         self.showDelay = showDelay
     }
 
@@ -42,8 +39,8 @@ public struct BarChartCell<SBG: ShapeStyle, SBR: ShapeStyle>: View {
             VStack {
                 Spacer(minLength: 0)
                 bar
-                    .fill(backgroundColor)
-                    .overlay(bar.stroke(borderColor, lineWidth: borderWdith))
+                    .fill(with: backgroundColor)
+                    .overlay(bar.stroke(borderColor.value, lineWidth: borderWdith))
                     .frame(height: CGFloat(self.firstDisplay ? 0.0 : self.value) * geometry.size.height)
                     .onAppear {
                         self.firstDisplay = false
@@ -68,11 +65,11 @@ struct BarChartCell_Previews: PreviewProvider {
         Group {
             Group {
                 BarChartCell(value: 0.6,
-                             backgroundColor: LinearGradient(colors: [.red, .green], startPoint: .bottom, endPoint: .top),
-                             borderColor: .red, borderWdith: 1)
+                             backgroundColor: ChartColor(color: .red).plump(),
+                             borderColor: ChartColor(color: .red), borderWdith: 1)
                 
-                BarChartCell(value: 0.2, backgroundColor: LinearGradient(colors: [.red, .green], startPoint: .bottom, endPoint: .top),
-                             borderColor: Color.clear, borderWdith: 1)
+                BarChartCell(value: 0.2, backgroundColor: ChartColor(color: .red),
+                             borderColor: ChartColor(color: .red), borderWdith: 1)
 //                BarChartCell(value: 1, gradientColor: ColorGradient.whiteBlack, touchLocation: CGFloat())
 //                BarChartCell(value: 1, gradientColor: ColorGradient(.purple), touchLocation: CGFloat())
             }

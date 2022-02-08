@@ -37,8 +37,8 @@ public struct PieChart: ChartView {
                                     startDegree: self.slices[index].startDeg,
                                     endDegree: self.slices[index].endDeg,
                                     index: index,
-                                    backgroundColor: backgroundColor.value,
-                                    borderColor: borderColor.value
+                                    backgroundColor: backgroundColor,
+                                    borderColor: borderColor
                                 )
                                     .opacity(currentTouchedIndex == nil ? 1 : (currentTouched ? 1 : 0.7))
                                     .scaleEffect(currentTouched ? 1.1 : 1)
@@ -110,8 +110,8 @@ struct PieChart_Previews: PreviewProvider {
                             let data = (await getAvgVideoTimeByDateAPI()).suffix(5)
                             self.data.labels = data.map({$0._id})
                             self.data.data = [ChartData(data: data.map({Double($0.count)}), label: "1",
-                                                        backgroundColors: ChartColor.generateColors(with: .red, count: data.count),
-                                                        borderColors: [.white])]
+                                                        backgroundColors: ChartColor.generateColors(with: ChartColor.primary.value, count: data.count).map({$0.plump()}),
+                                                        borderColors: [ChartColor(color: .white)])]
                         }
                     }
                     .background(
