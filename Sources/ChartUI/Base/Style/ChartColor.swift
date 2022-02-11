@@ -14,46 +14,6 @@ public struct ChartColor<T: ShapeStyle> {
         self.value = gradient
     }
     
-    static func generateColors(with color: T, count: Int, gap: Double = 1 / 6) -> [ChartColor<T>] where T == Color {
-        guard -1...1 ~= gap else { return [] }
-        var colors: [ChartColor<T>] = []
-        let hue: Double = Double(color.hsbaComponents.hue)
-        let opacity: Double = Double(color.hsbaComponents.opacity)
-        for i in 0..<count {
-            let hue: Double = hue + Double(i) * gap
-            colors.append(ChartColor(color: .init(hue: (hue + 1000000).truncatingRemainder(dividingBy: 1),
-                                                  saturation: 0.87,
-                                                  lightness: 0.57,
-                                                  opacity: opacity)))
-        }
-        return colors
-    }
-    
-    static func plump<Content: Shape>(@ViewBuilder content: @escaping () -> Content) -> some View  where T == Color {
-        content()
-            .overlay(
-                content()
-                    .fill(LinearGradient(colors: [.init(.sRGB, white: 0, opacity: 0.2),
-                                                  .init(.sRGB, white: 1, opacity: 0.2)],
-                                         startPoint: .bottom,
-                                         endPoint: .top))
-            )
-    }
-    
-    static func plump<Content: Shape, S>(fill: S,
-                                         @ViewBuilder content: @escaping () -> Content) -> some View  where T == Color, S: ShapeStyle {
-        content()
-            .fill(fill) // <-- different here
-            .overlay(
-                content()
-                    .fill(LinearGradient(colors: [
-                        .init(.sRGB, white: 0, opacity: 0.2),
-                        .init(.sRGB, white: 1, opacity: 0.2)
-                    ],
-                                         startPoint: .bottom,
-                                         endPoint: .top))
-            )
-    }
 }
 
 /// Some predefined colors, used for demos, defaults if color is missing, and data indicator point
@@ -71,8 +31,56 @@ extension ChartColor: Hashable, Equatable where T == Color {
         self.isPlump = isPlump
     }
     
-    func plump() -> Self {
+    
+    /// retur a plump ChartColor
+    public func plump() -> Self {
         return ChartColor(color: self.value, isPlump: true)
+    }
+    
+    /// generate colors with a base color.
+    /// - Parameters:
+    ///   - color: the color to begin with.
+    ///   - count: the number of generated colors.
+    ///   - gap: the gap value between adjacent colors.
+    public static func generateColors(with color: T, count: Int, gap: Double = 1 / 6) -> [ChartColor<T>] {
+        guard -1...1 ~= gap else { return [] }
+        var colors: [ChartColor<T>] = []
+        let hue: Double = Double(color.hsbaComponents.hue)
+        let opacity: Double = Double(color.hsbaComponents.opacity)
+        for i in 0..<count {
+            let hue: Double = hue + Double(i) * gap
+            colors.append(ChartColor(color: .init(hue: (hue + 1000000).truncatingRemainder(dividingBy: 1),
+                                                  saturation: 0.87,
+                                                  lightness: 0.57,
+                                                  opacity: opacity)))
+        }
+        return colors
+    }
+    
+    static func plump<Content: Shape>(@ViewBuilder content: @escaping () -> Content) -> some View {
+        content()
+            .overlay(
+                content()
+                    .fill(LinearGradient(colors: [.init(.sRGB, white: 0, opacity: 0.2),
+                                                  .init(.sRGB, white: 1, opacity: 0.2)],
+                                         startPoint: .bottom,
+                                         endPoint: .top))
+            )
+    }
+    
+    static func plump<Content: Shape, S>(fill: S,
+                                         @ViewBuilder content: @escaping () -> Content) -> some View  where S: ShapeStyle {
+        content()
+            .fill(fill) // <-- different here
+            .overlay(
+                content()
+                    .fill(LinearGradient(colors: [
+                        .init(.sRGB, white: 0, opacity: 0.2),
+                        .init(.sRGB, white: 1, opacity: 0.2)
+                    ],
+                                         startPoint: .bottom,
+                                         endPoint: .top))
+            )
     }
 }
 
