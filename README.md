@@ -1,7 +1,5 @@
 # ChartUI
 
-
-
 A multiplatform `SwiftUI` chart framework.
 
 ![BarchartExample](assets/README/BarchartExample.gif) ![LinechartExample](assets/README/LinechartExample.gif)![PiechartExample](assets/README/PiechartExample.gif) 
