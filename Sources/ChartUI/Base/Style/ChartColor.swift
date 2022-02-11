@@ -5,12 +5,12 @@ public struct ChartColor<T: ShapeStyle> {
     var isPlump: Bool = false
     
     @available(*, unavailable)
-    init(linearGradient gradient: T) where T == LinearGradient {
+    public init(linearGradient gradient: T) where T == LinearGradient {
         self.value = gradient
     }
     
     @available(*, unavailable)
-    init(radialGradient gradient: T) where T == RadialGradient {
+    public init(radialGradient gradient: T) where T == RadialGradient {
         self.value = gradient
     }
     
@@ -26,7 +26,7 @@ extension ChartColor: Hashable, Equatable where T == Color {
     public static let legendColor: ChartColor = .init(color: Color(hexString: "#E8E7EA"))
     public static let indicatorKnob: ChartColor = .init(color: Color(hexString: "#FF57A6"))
     
-    init(color: T, isPlump: Bool = false) {
+    public init(color: T, isPlump: Bool = false) {
         self.value = color
         self.isPlump = isPlump
     }
