@@ -73,19 +73,20 @@ extension Color {
     
     var hsbaComponents: (hue: CGFloat, saturation: CGFloat, brightness: CGFloat, opacity: CGFloat) {
         
-#if canImport(UIKit)
-        typealias NativeColor = UIColor
-#elseif canImport(AppKit)
-        typealias NativeColor = NSColor
-#endif
-        
         var r: CGFloat = 0
         var s: CGFloat = 0
         var b: CGFloat = 0
         var o: CGFloat = 0
         
-        NativeColor(self).getHue(&r, saturation: &s, brightness: &b, alpha: &o)
-        
+#if canImport(UIKit)
+        UIColor(self).getHue(&r, saturation: &s, brightness: &b, alpha: &o)
+#elseif canImport(AppKit)
+        /// NSColor:  This method works only with objects representing colors in the calibratedRGB or deviceRGB color space. Sending it to other objects raises an exception.
+        /// Need to transform ColorSpace first
+        if let color = NSColor(self).usingColorSpace(.deviceRGB) {
+            color.getHue(&r, saturation: &s, brightness: &b, alpha: &o)
+        }
+#endif
         return (r, s, b, o)
     }
 }
