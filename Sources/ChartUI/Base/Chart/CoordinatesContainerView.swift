@@ -197,10 +197,11 @@ struct CoordinatesContainerView<Content: View>: View {
                 .transition(.opacity)
                 .animation(.easeInOut, value: options)
             }
+            let overflow: CGFloat = 1
             /// Axes
             Capsule()
                 .fill(options.axesColor)
-                .frame(width: yGeometry.size.height, height: options.axesWidth, alignment: .center)
+                .frame(width: yGeometry.size.height + overflow, height: options.axesWidth, alignment: .center)
                 .rotationEffect(.degrees(90), anchor: .topLeading)
                 .offset(x: yGeometry.size.width, y: 0)
                 .show(options.showAxes)
@@ -249,9 +250,11 @@ struct CoordinatesContainerView<Content: View>: View {
         }
         
         return ZStack(alignment: .top) {
+            let overflow: CGFloat = 0
             Capsule()
                 .fill(options.axesColor)
-                .frame(width: axesLength, height: options.axesWidth, alignment: .center)
+                .frame(width: axesLength + overflow, height: options.axesWidth, alignment: .center)
+                .offset(x: -overflow, y: 0)
                 .show(options.showAxes)
             
             let capacity: CGFloat = ceil(minLabelFrameWidth / labelFrameWidth)
@@ -324,7 +327,7 @@ struct CoordinatesContainerView_Previews: PreviewProvider {
                 .padding(28)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
-                        .foregroundColor(.black)
+                        .foregroundColor(.white)
                         .shadow(color: .gray, radius: 4, x: 0, y: 0)
                 )
                 .padding(30)

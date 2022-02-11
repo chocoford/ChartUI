@@ -81,21 +81,22 @@ public struct PieChart: ChartView {
 }
 
 struct PieChart_Previews: PreviewProvider {
+    // FIXME: BUG! pie chart will have bizarre behavior if initial data are not empty
     @ObservedObject static var data: ChartDataset = .init(labels: [String](), data: [
-        .init(data: [1, 3.0, 5, 10],
-              label: "data 1",
-              backgroundColors: [.init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.2),
-                                 .init(.sRGB, red: 0.2, green: 1, blue: 0, opacity: 0.2),
-                                 .init(.sRGB, red: 0, green: 0.2, blue: 1, opacity: 0.2)],
-              borderColors: [.white]),
-        .init(data: [2, 7.0, 1, 5],
-              label: "data 2",
-              backgroundColor: .init(.sRGB, red: 0, green: 1, blue: 0, opacity: 0.2),
-              borderColor: .init(.sRGB, red: 0, green: 1, blue: 0, opacity: 0.8)),
-        .init(data: [4, 2.0, 2, 9],
-              label: "data 3",
-              backgroundColor: .init(.sRGB, red: 0, green: 0, blue: 1, opacity: 0.2),
-              borderColor: .init(.sRGB, red: 0, green: 0, blue: 1, opacity: 0.8))
+//        .init(data: [1, 3.0, 5, 10],
+//              label: "data 1",
+//              backgroundColors: [.init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.2),
+//                                 .init(.sRGB, red: 0.2, green: 1, blue: 0, opacity: 0.2),
+//                                 .init(.sRGB, red: 0, green: 0.2, blue: 1, opacity: 0.2)],
+//              borderColors: [.white]),
+//        .init(data: [2, 7.0, 1, 5],
+//              label: "data 2",
+//              backgroundColor: .init(.sRGB, red: 0, green: 1, blue: 0, opacity: 0.2),
+//              borderColor: .init(.sRGB, red: 0, green: 1, blue: 0, opacity: 0.8)),
+//        .init(data: [4, 2.0, 2, 9],
+//              label: "data 3",
+//              backgroundColor: .init(.sRGB, red: 0, green: 0, blue: 1, opacity: 0.2),
+//              borderColor: .init(.sRGB, red: 0, green: 0, blue: 1, opacity: 0.8))
     ])
 
     static var options: ChartOptions = .init(dataset: .automatic, axes: .hidden, coordinateLine: .hidden)
