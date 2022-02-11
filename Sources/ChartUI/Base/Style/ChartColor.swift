@@ -1,8 +1,8 @@
 import SwiftUI
 
 public struct ChartColor<T: ShapeStyle> {
-    var value: T
-    var isPlump: Bool = false
+    public var value: T
+    public private(set) var isPlump: Bool = false
     
     @available(*, unavailable)
     public init(linearGradient gradient: T) where T == LinearGradient {

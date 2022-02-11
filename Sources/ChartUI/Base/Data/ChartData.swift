@@ -22,43 +22,75 @@ public class ChartData: ObservableObject, Equatable, Identifiable {
     }
     @Published public var borderColors: [ChartColor<T>]
     @Published public var borderWidth: CGFloat
-
-    public init(id: String = UUID().uuidString, data: [Double?], label: String, backgroundColor: T, borderColor: T, borderWidth: CGFloat = 1.0) {
+    
+    /// ChartData initializer
+    /// - Parameters:
+    ///   - id: id
+    ///   - data: the data values of chart. Can be `nil` and in this case point will not show in chart.
+    ///   - label: the label of this `ChartData`.
+    ///   - backgroundColor: the background color of the chart's cell.
+    ///   - borderColor: the border color of the chart's cell. When it is `nil`, it will be the same color as `backgroundColor`.
+    ///   - borderWidth: the border width of the chart's cell, default to 1.0
+    public init(id: String = UUID().uuidString, data: [Double?], label: String, backgroundColor: T, borderColor: T? = nil, borderWidth: CGFloat = 1.0) {
         self.id = id
         self.label = label
         self.data = data
         self.backgroundColors = [.init(color: backgroundColor)]
-        self.borderColors = [.init(color: borderColor)]
+        self.borderColors = [.init(color: borderColor ?? backgroundColor)]
         self.borderWidth = borderWidth
     }
-
-    public init(id: String = UUID().uuidString, data: [Double?], label: String, backgroundColors: [T], borderColors: [T], borderWidth: CGFloat = 1.0) {
+    
+    /// ChartData initializer
+    /// - Parameters:
+    ///   - id: id
+    ///   - data: the data values of chart. Can be `nil` and in this case point will not show in chart.
+    ///   - label: the label of this `ChartData`.
+    ///   - backgroundColors: the background colors of the chart's cell.
+    ///   - borderColors: the border colosr of the chart's cell. When it is `nil`, it will be the same color as `backgroundColor`.
+    ///   - borderWidth: the border width of the chart's cell, default to 1.0
+    public init(id: String = UUID().uuidString, data: [Double?], label: String, backgroundColors: [T], borderColors: [T]? = nil, borderWidth: CGFloat = 1.0) {
         self.id = id
         self.label = label
         self.data = data
         self.backgroundColors = backgroundColors.map({.init(color: $0)})
-        self.borderColors = borderColors.map({.init(color: $0)})
+        self.borderColors = (borderColors ?? backgroundColors).map({.init(color: $0)})
         self.borderWidth = borderWidth
     }
     
-    public init(id: String = UUID().uuidString, data: [Double?], label: String, backgroundColor: ChartColor<Color>, borderColor: ChartColor<Color>, borderWidth: CGFloat = 1.0) {
+    /// ChartData initializer
+    /// - Parameters:
+    ///   - id: id
+    ///   - data: the data values of chart. Can be `nil` and in this case point will not show in chart.
+    ///   - label: the label of this `ChartData`.
+    ///   - backgroundColor: the background color of the chart's cell.
+    ///   - borderColor: the border color of the chart's cell. When it is `nil`, it will be the same color as `backgroundColor`.
+    ///   - borderWidth: the border width of the chart's cell, default to 1.0
+    public init(id: String = UUID().uuidString, data: [Double?], label: String, backgroundColor: ChartColor<Color>, borderColor: ChartColor<Color>? = nil, borderWidth: CGFloat = 1.0) {
         self.id = id
         self.label = label
         self.data = data
         self.backgroundColors = [backgroundColor]
-        self.borderColors = [borderColor]
+        self.borderColors = [borderColor ?? backgroundColor]
         self.borderWidth = borderWidth
     }
-
-    public init(id: String = UUID().uuidString, data: [Double?], label: String, backgroundColors: [ChartColor<Color>], borderColors: [ChartColor<Color>], borderWidth: CGFloat = 1.0) {
+    
+    /// ChartData initializer
+    /// - Parameters:
+    ///   - id: id
+    ///   - data: the data values of chart. Can be `nil` and in this case point will not show in chart.
+    ///   - label: the label of this `ChartData`.
+    ///   - backgroundColors: the background colosr of the chart's cell.
+    ///   - borderColors: the border colors of the chart's cell. When it is `nil`, it will be the same color as `backgroundColor`.
+    ///   - borderWidth: the border width of the chart's cell, default to 1.0
+    public init(id: String = UUID().uuidString, data: [Double?], label: String, backgroundColors: [ChartColor<Color>], borderColors: [ChartColor<Color>]? = nil, borderWidth: CGFloat = 1.0) {
         self.id = id
         self.label = label
         self.data = data
         self.backgroundColors = backgroundColors
-        self.borderColors = borderColors
+        self.borderColors = borderColors ?? backgroundColors
         self.borderWidth = borderWidth
     }
-    
+    /// init a empty `ChartData`.
     public init() {
         self.id = UUID().uuidString
         self.label = ""
