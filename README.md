@@ -51,11 +51,70 @@ var data: ChartData = ChartData(data: [1, 2, 3, 4, 5],
 var dataset: ChartDataset = .init(labels: labels, data: [data])
 ```
 
+## Options
 
+`ChartUI` charts take an `ChartOption` to configure itself. You can set `.automatic` to quickly apply default config.
 
-## Example
+```swift
+var options: ChartOptions = .init(dataset: .init(showValue: false),
+                                             axes: .automatic,
+                                             coordinateLine: .automatic) 
+																						 // legend is default to `.automatic`
+```
 
+options are as below:
 
+### dataset
+
+| name      | description                        | type   | default |
+| --------- | ---------------------------------- | ------ | ------- |
+| showValue | show numerical value on chart cell | `Bool` | `false` |
+
+### axes
+
+| name | description       | type                  | default      |
+| ---- | ----------------- | --------------------- | ------------ |
+| x    | Options for x axe | `AxesOptions.Options` | `.automatic` |
+| y    | Options for y axe | `AxesOptions.Options` | `.automatic` |
+
+### AxesOptions.Options
+
+| name         | description                                      | type      | default    |
+| ------------ | ------------------------------------------------ | --------- | ---------- |
+| startAtZero  | indicates chart view should start at zero in `y` | `Bool`    | `true`     |
+| max          | the max value should show in chart               | `Double?` | `nil`      |
+| min          | the min value should show in chart               | `Double?` | `nil`      |
+| showValue    | show value on axes                               | `Bool`    | `true`     |
+| valuePadding | distance from value to axes                      | `CGFloat` | 6          |
+| showAxes     | indicates should show axes on chart              | `Bool`    | `true`     |
+| axesWidth    | the width of axes                                | `CGFloat` | 1          |
+| axesColor    | the color of axes                                | `Color`   | `.primary` |
+
+### Coordinate Line
+
+| name | description             | type                            | default      |
+| ---- | ----------------------- | ------------------------------- | ------------ |
+| x    | Options for x direction | `CoordinateLineOptions.Options` | `.automatic` |
+| y    | Options for y direction | `CoordinateLineOptions.Options` | `.automatic` |
+
+#### CoordinateLineOptions.Options
+
+| name      | description                                                  | type       | default    |
+| --------- | ------------------------------------------------------------ | ---------- | ---------- |
+| number    | the number of coordinate lines, `nil` indicates automatic caculating the number. | `Int?`     | `nil`      |
+| lineType  | the type of coordinate lines                                 | `LineType` | `.dash`    |
+| lineColor | the color of coordinate lines                                | `Color`    | `.primary` |
+| lineWidth | the width of coordinate lines                                | `CGFloat`  | 0.5        |
+
+### Legend
+
+| name | description        | type   | default |
+| ---- | ------------------ | ------ | ------- |
+| show | show legend or not | `Bool` | `true`  |
+
+## Document
+
+[XCode Document Archive](assets/README/ChartUI.doccarchive) can be import to Xcode Document.
 
 ## License
 
