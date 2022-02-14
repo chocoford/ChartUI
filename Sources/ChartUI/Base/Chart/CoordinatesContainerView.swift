@@ -174,7 +174,7 @@ struct CoordinatesContainerView<Content: View>: View {
             if options.showValue {
                 ZStack(alignment: .trailing) {
                     VStack(alignment: .trailing, spacing: 0) {
-                        let num = self.options.coordinateLine?.y.number ?? yAxesValueNum
+                        let num = self.options.coordinateLine.y.number ?? yAxesValueNum
                         /// must has `id` here.
                         ForEach(0..<num, id: \.self) { i in
                             let value: Double = minValue + span / Double(num) * Double(num - i)
@@ -238,11 +238,13 @@ struct CoordinatesContainerView<Content: View>: View {
                         .frame(width: width,
                                height: actualLabelLength * CGFloat(sin(abs(rotationAngle.radians))),
                                alignment: .topTrailing)
+                        .padding(.top, options.valuePadding)
                         .animation(.easeInOut(duration: 0.2), value: dataset.labels)
                         .animation(Animation.spring().delay(Double(index) * 0.04), value: options.showValue)
                 } else {
                     Text(content)
                         .frame(width: width)
+                        .padding(.top, options.valuePadding)
                         .animation(.easeInOut(duration: 0.2), value: dataset.labels)
                         .animation(Animation.spring().delay(Double(index) * 0.04), value: options.showValue)
                 }

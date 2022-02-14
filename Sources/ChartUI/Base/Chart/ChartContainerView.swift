@@ -40,7 +40,7 @@ struct ChartContainerView<Content: View>: View {
                 return 0
             }
             
-            if self.options.coordinateLine == nil || max <= 0 {
+            if self.options.coordinateLine == .hidden || max <= 0 {
                 return max
             } else {
                 /// max > 0
@@ -68,7 +68,7 @@ struct ChartContainerView<Content: View>: View {
                 return 0
             }
             /// if not showing coordinate line or `min` greater than 0, it is no need to make change of `min`
-            if self.options.coordinateLine == nil || min >= 0 {
+            if self.options.coordinateLine == .hidden || min >= 0 {
                 return min
             } else {
                 /// min < 0
@@ -102,7 +102,7 @@ struct ChartContainerView<Content: View>: View {
                                  labelsIterateWay: self.lebelsIterateWay) {
             ZStack {
                 // MARK: Coordinate Line
-                if options.coordinateLine != nil {
+                if options.coordinateLine != .hidden {
                     CoordinatesLineView(coordinateLineNumber: coordinateLineNum, alignToLabel: alignToValue)
                 }
                 if chartDataset.data.count > 0 && chartDataset.data.first?.data.count ?? 0 > 0 {
