@@ -7,47 +7,43 @@
 
 import SwiftUI
 
-
+// TODO: Support `ShapeStyle` generic type for ChartColor
 struct ChartDataLabelView: View {
     var viewIndex: Int // for preference
     var height: CGFloat = 14
     var label: String
-    var backgroundColor: Color
-    var borderColor: Color
+    var backgroundColor: ChartColor<Color>
+    var borderColor: ChartColor<Color>
     @Binding var disabled: Bool
     
-    let disabledBackgroundColor: Color = .init(.sRGB, red: 0, green: 0, blue: 0, opacity: 0.2)
-    let disabledBorderColor: Color = .init(.sRGB, red: 0, green: 0, blue: 0, opacity: 0.3)
+    let disabledBackgroundColor: ChartColor = .init(color: .init(.sRGB, red: 0, green: 0, blue: 0, opacity: 0.2))
+    let disabledBorderColor: ChartColor = .init(color: .init(.sRGB, red: 0, green: 0, blue: 0, opacity: 0.3))
     
     var body: some View {
-//        GeometryReader { geometry in
-//            HStack {
-                HStack {
+        HStack {
+            RoundedRectangle(cornerRadius: 2)
+                .fill(with: disabled ? disabledBackgroundColor : backgroundColor)
+                .overlay(
                     RoundedRectangle(cornerRadius: 2)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 2)
-                                .stroke(disabled ? disabledBorderColor : borderColor)
-                        )
-                        .foregroundColor(disabled ? disabledBackgroundColor : backgroundColor)
-//                        .frame(width: 14, alignment: .center)
-                        .fixedSize()
-                    Text(label)
-                        .if(disabled, transform: { $0.strikethrough() })
-                }
-                .onTapGesture {
-                    withAnimation {
-                        disabled.toggle()
-                    }
-                }
-//                .preference(key: ChartDataLabelViewPreferenceKey.self,
-//                            value: [ChartDataLabelViewPreferenceData(viewIndex: self.viewIndex,
-//                                                                     bounds: geometry.frame(in: .named("chartLabelContainer")))])
-//            }.frame(width: geometry.size.width)
+                        .if(disabled, transform: { shape in
+                            shape.stroke(disabledBorderColor.value)
+                        }, falseTransform: { shape in
+                            shape.stroke(borderColor.value)
+                        })
+                )
+                .fixedSize()
+            Text(label)
+                .if(disabled, transform: { $0.strikethrough() })
         }
-//        .frame(height: height, alignment: .center)
-//        .border(.red)
-        
-//    }
+        .onTapGesture {
+            withAnimation {
+                disabled.toggle()
+            }
+        }
+        //                .preference(key: ChartDataLabelViewPreferenceKey.self,
+        //                            value: [ChartDataLabelViewPreferenceData(viewIndex: self.viewIndex,
+        //                                                                     bounds: geometry.frame(in: .named("chartLabelContainer")))])
+        }
 }
 
 struct ChartDataLabelView_Previews: PreviewProvider {
@@ -57,8 +53,8 @@ struct ChartDataLabelView_Previews: PreviewProvider {
         ZStack {
             ChartDataLabelView(viewIndex: 0,
                                label: "data 1",
-                               backgroundColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.2),
-                               borderColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.8),
+                               backgroundColor: .init(color: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.2)),
+                               borderColor: .init(color: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.8)),
                                disabled: $disabled)
         }
         .frame(width: 400, height: 400, alignment: .center)

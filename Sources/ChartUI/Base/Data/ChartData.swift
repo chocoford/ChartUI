@@ -65,7 +65,7 @@ public class ChartData: ObservableObject, Equatable, Identifiable {
     ///   - backgroundColor: the background color of the chart's cell.
     ///   - borderColor: the border color of the chart's cell. When it is `nil`, it will be the same color as `backgroundColor`.
     ///   - borderWidth: the border width of the chart's cell, default to 1.0
-    public init(id: String = UUID().uuidString, data: [Double?], label: String, backgroundColor: ChartColor<Color>, borderColor: ChartColor<Color>? = nil, borderWidth: CGFloat = 1.0) {
+    public init(id: String = UUID().uuidString, data: [Double?], label: String, backgroundColor: ChartColor<T>, borderColor: ChartColor<T>? = nil, borderWidth: CGFloat = 1.0) {
         self.id = id
         self.label = label
         self.data = data
@@ -82,7 +82,7 @@ public class ChartData: ObservableObject, Equatable, Identifiable {
     ///   - backgroundColors: the background colosr of the chart's cell.
     ///   - borderColors: the border colors of the chart's cell. When it is `nil`, it will be the same color as `backgroundColor`.
     ///   - borderWidth: the border width of the chart's cell, default to 1.0
-    public init(id: String = UUID().uuidString, data: [Double?], label: String, backgroundColors: [ChartColor<Color>], borderColors: [ChartColor<Color>]? = nil, borderWidth: CGFloat = 1.0) {
+    public init(id: String = UUID().uuidString, data: [Double?], label: String, backgroundColors: [ChartColor<T>], borderColors: [ChartColor<T>]? = nil, borderWidth: CGFloat = 1.0) {
         self.id = id
         self.label = label
         self.data = data

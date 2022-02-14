@@ -7,8 +7,11 @@ A multiplatform `SwiftUI` chart framework.
 ## Features
 
 * Bar charts
+  * Multiple Bar charts
+
 
 - Line charts
+  - Multiple Line charts
 
 - Pie charts
 
@@ -44,12 +47,13 @@ var labels: [String] = {
 }()
 var data: ChartData = ChartData(data: [1, 2, 3, 4, 5],
                                 label: "data 1",
-                                backgroundColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.2),
-                                borderColor: .init(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.8))
+                                backgroundColor: ChartColor.primary)
 var dataset: ChartDataset = .init(labels: labels, data: [data])
 ```
 
 
+
+## Example
 
 
 

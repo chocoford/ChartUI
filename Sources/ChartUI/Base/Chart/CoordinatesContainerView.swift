@@ -79,8 +79,8 @@ struct CoordinatesContainerView<Content: View>: View {
                         ForEach(Array(dataset.data.enumerated()), id: \.0) { (index, data) in
                             ChartDataLabelView(viewIndex: index,
                                                label: data.label,
-                                               backgroundColor: data.backgroundColor.value,
-                                               borderColor: data.borderColor.value,
+                                               backgroundColor: data.backgroundColor,
+                                               borderColor: data.borderColor,
                                                disabled: .constant(false))
                                 .onTapGesture {
                                     
@@ -112,8 +112,8 @@ struct CoordinatesContainerView<Content: View>: View {
                         ForEach(Array(dataset.labels.enumerated()), id: \.0) { (index, label) in
                             ChartDataLabelView(viewIndex: index,
                                                label: label,
-                                               backgroundColor: dataset.data.first?.backgroundColor(at: index).value ?? .clear,
-                                               borderColor: dataset.data.first?.backgroundColor(at: index).value ?? .clear,
+                                               backgroundColor: dataset.data.first?.backgroundColor(at: index) ?? .init(color: .clear),
+                                               borderColor: dataset.data.first?.backgroundColor(at: index) ?? .init(color: .clear),
                                                disabled: .constant(false))
                                 .onTapGesture {
                                     
