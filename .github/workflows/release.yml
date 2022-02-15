@@ -17,7 +17,7 @@ jobs:
         run: swift build -v
       - name: Build Documents
         run: |
-          xcodebuild docbuild -scheme ChartUI -derivedDataPath ./ChartUIBuild -destination 'platform=macOS,arch=arm64'
+          xcodebuild docbuild -scheme ChartUI -derivedDataPath ./ChartUIBuild -destination 'platform=macOS,arch=x86_64'
           echo ::set-output name=DOC_PATH::$(find ../ChartUIBuild -type d -name '*.doccarchive')
       - name: Release
         uses: softprops/action-gh-release@v1
