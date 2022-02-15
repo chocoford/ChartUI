@@ -17,6 +17,8 @@ public class ChartOptions: ObservableObject, Equatable {
         lhs.coordinateLine == rhs.coordinateLine
     }
     
+    
+    /// dataset options
     public class DatasetOptions: ObservableObject, Equatable {
         public static func == (lhs: ChartOptions.DatasetOptions, rhs: ChartOptions.DatasetOptions) -> Bool {
             lhs.showValue == rhs.showValue
@@ -31,6 +33,7 @@ public class ChartOptions: ObservableObject, Equatable {
             self.showValue = showValue
         }
     }
+    /// axes options
     public class AxesOptions: ObservableObject, Equatable {
         public static func == (lhs: ChartOptions.AxesOptions, rhs: ChartOptions.AxesOptions) -> Bool {
             lhs.x == rhs.x && lhs.y == rhs.y
@@ -41,6 +44,7 @@ public class ChartOptions: ObservableObject, Equatable {
         
         public class Options: ObservableObject, Equatable {
             public static func == (lhs: ChartOptions.AxesOptions.Options, rhs: ChartOptions.AxesOptions.Options) -> Bool {
+                lhs.startAtZero == rhs.startAtZero &&
                 lhs.max == rhs.max &&
                 lhs.min == rhs.min &&
                 lhs.showValue == rhs.showValue &&
@@ -54,17 +58,25 @@ public class ChartOptions: ObservableObject, Equatable {
             public static var hidden = Options(showValue: false, showAxes: false, axesWidth: 0.5, axesColor: .primary)
             
             // value
+            /// indicates chart view should start at zero in `y`, default to `true`
             @Published public var startAtZero: Bool
+            /// the max value should show in chart, default to `nil`
             @Published public var max: Double?
+            /// the min value should show in chart, default to `nil`
             @Published public var min: Double?
+            /// show value on axes, default to `true`
             @Published public var showValue: Bool
+            /// distance from value to axes, default to `6`.
             @Published public var valuePadding: CGFloat
             var minLabelUnitLength: CGFloat = 4
             var dividedBases: [Double] = [1, 2, 5]
             
             // axes
+            /// indicates should show axes on chart, default to `true`
             @Published public var showAxes: Bool
+            /// the width of axes, default to `1`
             @Published public var axesWidth: CGFloat
+            /// the color of axes, default to `.primary`
             @Published public var axesColor: Color
             
             public init(startAtZero: Bool = true,
@@ -104,6 +116,7 @@ public class ChartOptions: ObservableObject, Equatable {
             }
         }
     }
+    /// coordinate line options
     public class CoordinateLineOptions: ObservableObject, Equatable {
         public static func == (lhs: ChartOptions.CoordinateLineOptions, rhs: ChartOptions.CoordinateLineOptions) -> Bool {
             lhs.x == rhs.x && lhs.y == rhs.y
@@ -127,9 +140,13 @@ public class ChartOptions: ObservableObject, Equatable {
             public static var automatic = Options(number: nil, lineType: .solid, lineColor: .gray.opacity(0.4), lineWidth: 0.5)
             public static var hidden = Options(number: nil, lineType: .solid, lineColor: .clear, lineWidth: 0)
             
+            /// the number of coordinate lines, defualt to `nil`, indicates automatic caculating the number.
             @Published public var number: Int?
+            /// the type of coordinate lines, default to `.dash`
             @Published public var lineType: LineType
+            /// the color of coordinate lines, default to `.primary`
             @Published public var lineColor: Color
+            /// the width of coordinate lines. default to `0.5`
             @Published public var lineWidth: CGFloat
             
 
@@ -166,11 +183,11 @@ public class ChartOptions: ObservableObject, Equatable {
             }
         }
     }
-    
-    public class Legend: ObservableObject, Equatable {
+    /// legend options
+    public class LegendOptions: ObservableObject, Equatable {
         @Published public var show: Bool
         
-        public static func == (lhs: ChartOptions.Legend, rhs: ChartOptions.Legend) -> Bool {
+        public static func == (lhs: ChartOptions.LegendOptions, rhs: ChartOptions.LegendOptions) -> Bool {
             lhs.show == rhs.show
         }
         
@@ -178,23 +195,30 @@ public class ChartOptions: ObservableObject, Equatable {
             self.show = show
         }
         
-        public static var automatic = Legend()
+        public static var automatic = LegendOptions()
     }
     
     
-    public static var automatic = ChartOptions(dataset: .automatic, axes: .automatic, coordinateLine: .automatic)
+    public static var automatic = ChartOptions(dataset: .automatic, axes: .automatic, coordinateLine: .automatic, legend: .automatic)
     
+    /// dataset options
     @Published public var dataset: DatasetOptions
+    /// axes options
     @Published public var axes: AxesOptions
-    @Published public var coordinateLine: CoordinateLineOptions?
-    @Published public var legend: Legend
+    /// coordinate line options
+    @Published public var coordinateLine: CoordinateLineOptions
+    /// legend options
+    @Published public var legend: LegendOptions
     
     var datasetCancellable: AnyCancellable? = nil
     var axesCancellable: AnyCancellable? = nil
     var coordinateLineCancellable: AnyCancellable? = nil
     var legendCancellable: AnyCancellable? = nil
     
-    public init(dataset: DatasetOptions = .automatic, axes: AxesOptions = .hidden, coordinateLine: CoordinateLineOptions? = nil, legend: Legend = .automatic) {
+    public init(dataset: DatasetOptions = .automatic,
+                axes: AxesOptions = .hidden,
+                coordinateLine: CoordinateLineOptions = .automatic,
+                legend: LegendOptions = .automatic) {
         self.dataset = dataset
         self.axes = axes
         self.coordinateLine = coordinateLine
@@ -211,7 +235,7 @@ public class ChartOptions: ObservableObject, Equatable {
         axesCancellable = axes.objectWillChange.sink { [weak self] (_) in
             self?.objectWillChange.send()
         }
-        coordinateLineCancellable = coordinateLine?.objectWillChange.sink { [weak self] (_) in
+        coordinateLineCancellable = coordinateLine.objectWillChange.sink { [weak self] (_) in
             self?.objectWillChange.send()
         }
         legendCancellable = legend.objectWillChange.sink { [weak self] (_) in

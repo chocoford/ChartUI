@@ -1,0 +1,26 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  # pull_request:
+  #   branches: [ main ]
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build
+        run: swift build -v
+      - name: Build Documents
+        run: |
+          xcodebuild docbuild -scheme ChartUI -derivedDataPath ./ChartUIBuild -destination 'platform=macOS,arch=arm64'
+          echo ::set-output name=DOC_PATH::$(find ../ChartUIBuild -type d -name '*.doccarchive')
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: ${{ steps.branch_name.outputs.DOC_PATH }}
