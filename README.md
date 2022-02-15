@@ -23,6 +23,8 @@ A multiplatform `SwiftUI` chart framework.
 
 In Xcode go to `File -> Add Packages...` and paste in the repo's url: `https://github.com/Chocoford/ChartUI`
 
+Chose `up to next major version` to be `0.0.2`<`1.0.0`
+
 ### basic usage
 
 ```swift
@@ -114,7 +116,7 @@ options are as below:
 
 ## Document
 
-[XCode Document Archive](assets/README/ChartUI.doccarchive) can be import to Xcode Document.
+[XCode Document Archive](https://github.com/chocoford/ChartUI/releases/download/v0.0.2/ChartUI.doccarchive.zip) can be import to Xcode Document.
 
 ## License
 
